@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Schema Markup Generator — Small Business Toolkit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAF7;
+    --panel:#FFFFFF;
+    --ink:#1B2A41;
+    --ink-soft:#51617A;
+    --blueprint:#2B6CB0;
+    --blueprint-dark:#1E4E80;
+    --grid:#D9E2EC;
+    --amber:#B7791F;
+    --green:#2F7D5A;
+    --code-bg:#12213A;
+    --code-grid:#1E3358;
+    --code-text:#DCE6F5;
+    --code-key:#7FB2FF;
+    --code-str:#9FE6B8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+  }
+  header{
+    padding:28px 32px 22px;
+    border-bottom:1px solid var(--grid);
+    background:var(--panel);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--blueprint);
+    margin:0 0 8px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:26px;
+    font-weight:700;
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  header p.sub{
+    margin:0;
+    color:var(--ink-soft);
+    font-size:14px;
+    max-width:640px;
+    line-height:1.5;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    min-height:calc(100vh - 108px);
+  }
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;}
+  }
+  .form-pane{
+    padding:24px 28px 60px;
+    border-right:1px solid var(--grid);
+    background:var(--paper);
+  }
+  .tabs{
+    display:flex;
+    gap:4px;
+    margin-bottom:22px;
+    border-bottom:1px solid var(--grid);
+    flex-wrap:wrap;
+  }
+  .tab{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:9px 14px;
+    background:transparent;
+    border:none;
+    border-bottom:2px solid transparent;
+    color:var(--ink-soft);
+    cursor:pointer;
+    letter-spacing:.02em;
+  }
+  .tab.active{
+    color:var(--blueprint-dark);
+    border-bottom-color:var(--blueprint);
+    font-weight:600;
+  }
+  .panel{display:none;}
+  .panel.active{display:block; animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:translateY(0);}}
+  .field-group{margin-bottom:16px;}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  label{
+    display:block;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  label .req{color:var(--amber); margin-left:3px;}
+  input, select, textarea{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--grid);
+    border-radius:5px;
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    background:var(--panel);
+    color:var(--ink);
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:none;
+    border-color:var(--blueprint);
+    box-shadow:0 0 0 3px rgba(43,108,176,0.12);
+  }
+  textarea{resize:vertical; min-height:52px;}
+  .hint{font-size:11.5px; color:var(--ink-soft); margin-top:4px; line-height:1.4;}
+  .section-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    margin:26px 0 14px;
+    padding-top:18px;
+    border-top:1px dashed var(--grid);
+  }
+  .section-title:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  .faq-item{
+    border:1px solid var(--grid);
+    border-radius:8px;
+    padding:14px;
+    margin-bottom:12px;
+    background:var(--panel);
+    position:relative;
+  }
+  .faq-remove{
+    position:absolute; top:10px; right:10px;
+    background:none; border:none; color:var(--ink-soft);
+    font-size:16px; cursor:pointer; line-height:1;
+  }
+  .faq-remove:hover{color:#C0392B;}
+  .add-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    padding:9px 14px;
+    background:var(--panel);
+    border:1px dashed var(--blueprint);
+    border-radius:6px;
+    color:var(--blueprint-dark);
+    cursor:pointer;
+  }
+  .add-btn:hover{background:#EEF4FB;}
+  .code-pane{
+    background:var(--code-bg);
+    background-image:
+      linear-gradient(var(--code-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--code-grid) 1px, transparent 1px);
+    background-size:22px 22px;
+    padding:24px 26px 60px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+  }
+  .code-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+    position:sticky;
+    top:0;
+  }
+  .code-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--code-text);
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .stamp{
+    font-size:10px;
+    padding:3px 8px;
+    border-radius:20px;
+    background:rgba(47,125,90,0.18);
+    color:#7FE0A9;
+    border:1px solid rgba(127,224,169,0.4);
+    letter-spacing:.05em;
+  }
+  .stamp.incomplete{
+    background:rgba(183,121,31,0.15);
+    color:#F0BE71;
+    border-color:rgba(240,190,113,0.4);
+  }
+  .copy-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:7px 13px;
+    background:var(--blueprint);
+    color:#fff;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  .copy-btn:hover{background:var(--blueprint-dark);}
+  .copy-btn.copied{background:var(--green);}
+  pre{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    line-height:1.65;
+    color:var(--code-text);
+    white-space:pre-wrap;
+    word-break:break-word;
+    margin:0 0 30px;
+  }
+  .k{color:var(--code-key);}
+  .s{color:var(--code-str);}
+  .install-note{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    color:#8AA4C9;
+    border-top:1px dashed #2A4670;
+    padding-top:14px;
+    margin-top:-16px;
+    line-height:1.6;
+  }
+  .install-note code{
+    background:#1E3358;
+    padding:1px 5px;
+    border-radius:3px;
+    color:#DCE6F5;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Schema Markup / JSON-LD Toolkit</p>
+  <h1>Fillable Schema Generator</h1>
+  <p class="sub">Fill in your business's real details on the left. Ready-to-paste JSON-LD code builds itself on the right — copy it into the &lt;head&gt; of your website, or hand it to whoever manages your site.</p>
+</header>
+
+<div class="layout">
+  <div class="form-pane">
+
+    <div class="tabs">
+      <button class="tab active" data-tab="biz">Business Info</button>
+      <button class="tab" data-tab="faq">FAQ</button>
+      <button class="tab" data-tab="review">Reviews</button>
+      <button class="tab" data-tab="person">Author / Owner</button>
+    </div>
+
+    <!-- BUSINESS PANEL -->
+    <div class="panel active" id="panel-biz">
+      <div class="section-title">Core Identity</div>
+
+      <div class="field-group">
+        <label>Business Name <span class="req">*</span></label>
+        <input id="b-name" placeholder="e.g. Maple Street Dental" oninput="render()">
+      </div>
+
+      <div class="field-group">
+        <label>Business Type</label>
+        <select id="b-type" onchange="render()">
+          <option value="LocalBusiness">General (LocalBusiness)</option>
+          <option value="Restaurant">Restaurant</option>
+          <option value="Dentist">Dentist</option>
+          <option value="Plumber">Plumber</option>
+          <option value="Electrician">Electrician</option>
+          <option value="HairSalon">Hair Salon</option>
+          <option value="AutoRepair">Auto Repair</option>
+          <option value="RealEstateAgent">Real Estate Agent</option>
+          <option value="LegalService">Legal Service</option>
+          <option value="MedicalBusiness">Medical Practice</option>
+          <option value="Store">Retail Store</option>
+        </select>
+        <p class="hint">Pick the closest match. This tells search engines what kind of business you are.</p>
+      </div>
+
+      <div class="field-group">
+        <label>Website URL <span class="req">*</span></label>
+        <input id="b-url" placeholder="https://www.yourbusiness.com" oninput="render()">
+      </div>
+
+      <div class="field-group">
+        <label>Logo / Photo URL</label>
+        <input id="b-image" placeholder="https://www.yourbusiness.com/logo.png" oninput="render()">
+      </div>
+
+      <div class="section-title">Contact & Location</div>
+
+      <div class="field-group">
+        <label>Phone Number <span class="req">*</span></label>
+        <input id="b-phone" placeholder="+1-614-555-0100" oninput="render()">
+      </div>
+
+      <div class="field-group">
+        <label>Street Address <span class="req">*</span></label>
+        <input id="b-street" placeholder="123 Maple St" oninput="render()">
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>City <span class="req">*</span></label>
+          <input id="b-city" placeholder="Columbus" oninput="render()">
+        </div>
+        <div class="field-group">
+          <label>State</label>
+          <input id="b-state" placeholder="OH" oninput="render()">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>ZIP Code</label>
+          <input id="b-zip" placeholder="43215" oninput="render()">
+        </div>
+        <div class="field-group">
+          <label>Price Range</label>
+          <select id="b-price" onchange="render()">
+            <option value="">— none —</option>
+            <option value="$">$</option>
+            <option value="$$">$$</option>
+            <option value="$$$">$$$</option>
+            <option value="$$$$">$$$$</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">Hours</div>
+      <div class="field-group">
+        <label>Opening Hours</label>
+        <input id="b-hours" placeholder="Mo-Fr 09:00-17:00, Sa 10:00-14:00" oninput="render()">
+        <p class="hint">Format: Days Open-Close, comma separated. Use standard abbreviations (Mo, Tu, We, Th, Fr, Sa, Su).</p>
+      </div>
+
+      <div class="section-title">Social Profiles (optional)</div>
+      <div class="field-group">
+        <label>Facebook / Instagram / LinkedIn / Yelp URLs</label>
+        <textarea id="b-social" placeholder="One per line, e.g.&#10;https://www.facebook.com/yourbusiness&#10;https://www.yelp.com/biz/yourbusiness" oninput="render()"></textarea>
+        <p class="hint">Linking your social profiles helps confirm you're a real, consistent business across the web — good for GEO.</p>
+      </div>
+    </div>
+
+    <!-- FAQ PANEL -->
+    <div class="panel" id="panel-faq">
+      <div class="section-title">Frequently Asked Questions</div>
+      <p class="hint" style="margin-bottom:16px;">This is the single highest-value schema for AEO/GEO. Write questions the way real customers ask them, and answer in plain, complete sentences — AI answer engines lift these directly.</p>
+      <div id="faq-list"></div>
+      <button class="add-btn" onclick="addFaq()">+ Add another question</button>
+    </div>
+
+    <!-- REVIEW PANEL -->
+    <div class="panel" id="panel-review">
+      <div class="section-title">Rating Summary</div>
+      <p class="hint" style="margin-bottom:16px;">Only use this if the numbers are real and verifiable (e.g. from Google, Yelp, or your own collected reviews). Fake or unverifiable ratings violate Google's guidelines and can get a site penalized.</p>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Average Rating (1–5)</label>
+          <input id="r-value" type="number" min="1" max="5" step="0.1" placeholder="4.8" oninput="render()">
+        </div>
+        <div class="field-group">
+          <label>Number of Reviews</label>
+          <input id="r-count" type="number" min="1" placeholder="127" oninput="render()">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Where these reviews are from</label>
+        <input id="r-source" placeholder="e.g. Google, Yelp, Facebook" oninput="render()">
+      </div>
+    </div>
+
+    <!-- PERSON PANEL -->
+    <div class="panel" id="panel-person">
+      <div class="section-title">Owner / Author Profile</div>
+      <p class="hint" style="margin-bottom:16px;">Use this on About pages or blog posts to reinforce E-E-A-T — it tells search engines and AI systems a real, credentialed person stands behind the content.</p>
+
+      <div class="field-group">
+        <label>Full Name</label>
+        <input id="p-name" placeholder="Jane Smith" oninput="render()">
+      </div>
+
+      <div class="field-group">
+        <label>Job Title / Credential</label>
+        <input id="p-title" placeholder="Owner & Licensed Master Plumber" oninput="render()">
+      </div>
+
+      <div class="field-group">
+        <label>Bio / Profile Page URL</label>
+        <input id="p-url" placeholder="https://www.yourbusiness.com/about/jane-smith" oninput="render()">
+      </div>
+
+      <div class="field-group">
+        <label>Photo URL</label>
+        <input id="p-image" placeholder="https://www.yourbusiness.com/team/jane.jpg" oninput="render()">
+      </div>
+    </div>
+
+  </div>
+
+  <div class="code-pane">
+    <div class="code-header">
+      <span class="code-title">JSON-LD Output</span>
+    </div>
+    <div id="output"></div>
+    <p class="install-note">
+      Paste each block inside a <code>&lt;script type="application/ld+json"&gt;</code> tag in your page's <code>&lt;head&gt;</code>. Put Business Info on every page (or at least the homepage), FAQ schema only on the page where that FAQ content actually appears, and Person schema on the relevant author/about page. Test everything with Google's Rich Results Test before publishing.
+    </p>
+  </div>
+</div>
+
+<script>
+let faqCount = 0;
+
+function addFaq(q, a){
+  faqCount++;
+  const id = faqCount;
+  const wrap = document.createElement('div');
+  wrap.className = 'faq-item';
+  wrap.id = 'faq-' + id;
+  wrap.innerHTML = `
+    <button class="faq-remove" onclick="removeFaq(${id})">&times;</button>
+    <div class="field-group">
+      <label>Question</label>
+      <input id="faq-q-${id}" placeholder="Do you offer emergency service?" value="${q||''}" oninput="render()">
+    </div>
+    <div class="field-group" style="margin-bottom:0;">
+      <label>Answer</label>
+      <textarea id="faq-a-${id}" placeholder="Yes, we offer 24/7 emergency plumbing service throughout the Columbus area, with a guaranteed response time of under an hour." oninput="render()">${a||''}</textarea>
+    </div>
+  `;
+  document.getElementById('faq-list').appendChild(wrap);
+}
+
+function removeFaq(id){
+  const el = document.getElementById('faq-' + id);
+  if(el) el.remove();
+  render();
+}
+
+function esc(str){
+  return (str||'').replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,' ').trim();
+}
+
+function highlightJson(obj){
+  let str = JSON.stringify(obj, null, 2);
+  str = str.replace(/"([^"]+)":/g, '<span class="k">"$1"</span>:');
+  str = str.replace(/: "([^"]*)"/g, ': <span class="s">"$1"</span>');
+  return str;
+}
+
+function copyBlock(id, btn){
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const old = btn.innerText;
+    btn.innerText = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.innerText = old; btn.classList.remove('copied'); }, 1600);
+  });
+}
+
+function block(title, obj, complete){
+  const codeId = 'code-' + title.replace(/\s+/g,'-').toLowerCase();
+  return `
+    <div class="code-header" style="margin-top:26px;">
+      <span class="code-title">${title} <span class="stamp ${complete ? '' : 'incomplete'}">${complete ? 'ready to paste' : 'fill required fields'}</span></span>
+      <button class="copy-btn" onclick="copyBlock('${codeId}', this)">Copy</button>
+    </div>
+    <pre id="${codeId}">&lt;script type="application/ld+json"&gt;
+${highlightJson(obj)}
+&lt;/script&gt;</pre>
+  `;
+}
+
+function render(){
+  let out = '';
+
+  // BUSINESS
+  const name = document.getElementById('b-name').value.trim();
+  const type = document.getElementById('b-type').value;
+  const url = document.getElementById('b-url').value.trim();
+  const image = document.getElementById('b-image').value.trim();
+  const phone = document.getElementById('b-phone').value.trim();
+  const street = document.getElementById('b-street').value.trim();
+  const city = document.getElementById('b-city').value.trim();
+  const state = document.getElementById('b-state').value.trim();
+  const zip = document.getElementById('b-zip').value.trim();
+  const price = document.getElementById('b-price').value;
+  const hours = document.getElementById('b-hours').value.trim();
+  const social = document.getElementById('b-social').value.split('\n').map(s=>s.trim()).filter(Boolean);
+
+  const bizObj = {
+    "@context": "https://schema.org",
+    "@type": type || "LocalBusiness",
+  };
+  if(name) bizObj.name = name;
+  if(url) bizObj.url = url;
+  if(image) bizObj.image = image;
+  if(phone) bizObj.telephone = phone;
+  if(street || city || state || zip){
+    bizObj.address = { "@type": "PostalAddress" };
+    if(street) bizObj.address.streetAddress = street;
+    if(city) bizObj.address.addressLocality = city;
+    if(state) bizObj.address.addressRegion = state;
+    if(zip) bizObj.address.postalCode = zip;
+    bizObj.address.addressCountry = "US";
+  }
+  if(price) bizObj.priceRange = price;
+  if(hours) bizObj.openingHours = hours;
+  if(social.length) bizObj.sameAs = social;
+
+  const bizComplete = !!(name && url && phone && street && city);
+  out += block('Business Info', bizObj, bizComplete);
+
+  // FAQ
+  const faqItems = [];
+  document.querySelectorAll('#faq-list .faq-item').forEach(item=>{
+    const q = item.querySelector('input').value.trim();
+    const a = item.querySelector('textarea').value.trim();
+    if(q && a){
+      faqItems.push({
+        "@type": "Question",
+        "name": q,
+        "acceptedAnswer": { "@type": "Answer", "text": a }
+      });
+    }
+  });
+  if(faqItems.length){
+    const faqObj = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqItems
+    };
+    out += block('FAQ Page', faqObj, true);
+  } else {
+    out += block('FAQ Page', {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[/* add a question on the left */]}, false);
+  }
+
+  // REVIEW
+  const rValue = document.getElementById('r-value').value;
+  const rCount = document.getElementById('r-count').value;
+  const rSource = document.getElementById('r-source').value.trim();
+  if(rValue && rCount && name){
+    const reviewObj = {
+      "@context": "https://schema.org",
+      "@type": type || "LocalBusiness",
+      "name": name,
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": rValue,
+        "reviewCount": rCount
+      }
+    };
+    if(rSource) reviewObj.aggregateRating.description = "Based on reviews from " + rSource;
+    out += block('Review Summary', reviewObj, true);
+  } else {
+    out += block('Review Summary', {"@context":"https://schema.org","@type":"LocalBusiness","aggregateRating":{"@type":"AggregateRating","ratingValue":"—","reviewCount":"—"}}, false);
+  }
+
+  // PERSON
+  const pName = document.getElementById('p-name').value.trim();
+  const pTitle = document.getElementById('p-title').value.trim();
+  const pUrl = document.getElementById('p-url').value.trim();
+  const pImage = document.getElementById('p-image').value.trim();
+  if(pName){
+    const personObj = {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": pName
+    };
+    if(pTitle) personObj.jobTitle = pTitle;
+    if(pUrl) personObj.url = pUrl;
+    if(pImage) personObj.image = pImage;
+    if(name) personObj.worksFor = { "@type": "Organization", "name": name };
+    out += block('Owner / Author', personObj, true);
+  } else {
+    out += block('Owner / Author', {"@context":"https://schema.org","@type":"Person","name":"—"}, false);
+  }
+
+  document.getElementById('output').innerHTML = out;
+}
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+addFaq('Do you offer free estimates?', 'Yes, we provide free, no-obligation estimates for all projects. Call or fill out our contact form to schedule a visit.');
+render();
+</script>
+
+</body>
+</html>
