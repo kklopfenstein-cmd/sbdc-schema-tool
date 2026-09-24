@@ -2,609 +2,681 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Schema Markup Generator — Small Business Toolkit</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schema Markup Generator – Miami Valley SBDC</title>
+<meta name="description" content="Free tool from the Miami Valley SBDC: create schema markup that helps search engines and AI answer engines understand your small business.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --paper:#FAFAF7;
-    --panel:#FFFFFF;
-    --ink:#1B2A41;
-    --ink-soft:#51617A;
-    --blueprint:#2B6CB0;
-    --blueprint-dark:#1E4E80;
-    --grid:#D9E2EC;
-    --amber:#B7791F;
-    --green:#2F7D5A;
-    --code-bg:#12213A;
-    --code-grid:#1E3358;
-    --code-text:#DCE6F5;
-    --code-key:#7FB2FF;
-    --code-str:#9FE6B8;
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    --bg: #f4f7fa; --card: #ffffff; --ink: #1c2430; --muted: #4a5667; --line: #cfd9e4;
+    --navy: #12355b; --accent: #b3121f; --sky: #e6eef6; --field: #ffffff;
+    --ok-bg: #e5f4ea; --ok: #1d6b36; --warn-bg: #fdf1e2; --warn: #8a4b00;
+    --code-bg: #0f1e30; --code-ink: #e6ecf2;
   }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Inter',sans-serif;
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1722; --card: #17212e; --ink: #e6ecf2; --muted: #a9b7c6; --line: #2d3b4c;
+      --navy: #9cc3ec; --accent: #ff7a85; --sky: #1d2b3b; --field: #0f1722;
+      --ok-bg: #16311f; --ok: #8fd6a4; --warn-bg: #3a2a12; --warn: #f4c07a;
+      --code-bg: #0a1119; --code-ink: #e6ecf2;
+    }
   }
-  header{
-    padding:28px 32px 22px;
-    border-bottom:1px solid var(--grid);
-    background:var(--panel);
+  :root[data-theme="dark"] {
+    --bg: #0f1722; --card: #17212e; --ink: #e6ecf2; --muted: #a9b7c6; --line: #2d3b4c;
+    --navy: #9cc3ec; --accent: #ff7a85; --sky: #1d2b3b; --field: #0f1722;
+    --ok-bg: #16311f; --ok: #8fd6a4; --warn-bg: #3a2a12; --warn: #f4c07a;
+    --code-bg: #0a1119; --code-ink: #e6ecf2;
   }
-  .eyebrow{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    color:var(--blueprint);
-    margin:0 0 8px;
-  }
-  h1{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:26px;
-    font-weight:700;
-    margin:0 0 6px;
-    letter-spacing:-0.01em;
-  }
-  header p.sub{
-    margin:0;
-    color:var(--ink-soft);
-    font-size:14px;
-    max-width:640px;
-    line-height:1.5;
-  }
-  .layout{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    min-height:calc(100vh - 108px);
-  }
-  @media (max-width:900px){
-    .layout{grid-template-columns:1fr;}
-  }
-  .form-pane{
-    padding:24px 28px 60px;
-    border-right:1px solid var(--grid);
-    background:var(--paper);
-  }
-  .tabs{
-    display:flex;
-    gap:4px;
-    margin-bottom:22px;
-    border-bottom:1px solid var(--grid);
-    flex-wrap:wrap;
-  }
-  .tab{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    padding:9px 14px;
-    background:transparent;
-    border:none;
-    border-bottom:2px solid transparent;
-    color:var(--ink-soft);
-    cursor:pointer;
-    letter-spacing:.02em;
-  }
-  .tab.active{
-    color:var(--blueprint-dark);
-    border-bottom-color:var(--blueprint);
-    font-weight:600;
-  }
-  .panel{display:none;}
-  .panel.active{display:block; animation:fade .25s ease;}
-  @keyframes fade{from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:translateY(0);}}
-  .field-group{margin-bottom:16px;}
-  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  label{
-    display:block;
-    font-size:11.5px;
-    font-weight:600;
-    color:var(--ink-soft);
-    margin-bottom:5px;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-  }
-  label .req{color:var(--amber); margin-left:3px;}
-  input, select, textarea{
-    width:100%;
-    padding:9px 10px;
-    border:1px solid var(--grid);
-    border-radius:5px;
-    font-family:'Inter',sans-serif;
-    font-size:13.5px;
-    background:var(--panel);
-    color:var(--ink);
-  }
-  input:focus, select:focus, textarea:focus{
-    outline:none;
-    border-color:var(--blueprint);
-    box-shadow:0 0 0 3px rgba(43,108,176,0.12);
-  }
-  textarea{resize:vertical; min-height:52px;}
-  .hint{font-size:11.5px; color:var(--ink-soft); margin-top:4px; line-height:1.4;}
-  .section-title{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:15px;
-    font-weight:600;
-    margin:26px 0 14px;
-    padding-top:18px;
-    border-top:1px dashed var(--grid);
-  }
-  .section-title:first-of-type{border-top:none; padding-top:0; margin-top:0;}
-  .faq-item{
-    border:1px solid var(--grid);
-    border-radius:8px;
-    padding:14px;
-    margin-bottom:12px;
-    background:var(--panel);
-    position:relative;
-  }
-  .faq-remove{
-    position:absolute; top:10px; right:10px;
-    background:none; border:none; color:var(--ink-soft);
-    font-size:16px; cursor:pointer; line-height:1;
-  }
-  .faq-remove:hover{color:#C0392B;}
-  .add-btn{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12.5px;
-    padding:9px 14px;
-    background:var(--panel);
-    border:1px dashed var(--blueprint);
-    border-radius:6px;
-    color:var(--blueprint-dark);
-    cursor:pointer;
-  }
-  .add-btn:hover{background:#EEF4FB;}
-  .code-pane{
-    background:var(--code-bg);
-    background-image:
-      linear-gradient(var(--code-grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--code-grid) 1px, transparent 1px);
-    background-size:22px 22px;
-    padding:24px 26px 60px;
-    position:sticky;
-    top:0;
-    height:100vh;
-    overflow-y:auto;
-  }
-  .code-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:14px;
-    position:sticky;
-    top:0;
-  }
-  .code-title{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    color:var(--code-text);
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .stamp{
-    font-size:10px;
-    padding:3px 8px;
-    border-radius:20px;
-    background:rgba(47,125,90,0.18);
-    color:#7FE0A9;
-    border:1px solid rgba(127,224,169,0.4);
-    letter-spacing:.05em;
-  }
-  .stamp.incomplete{
-    background:rgba(183,121,31,0.15);
-    color:#F0BE71;
-    border-color:rgba(240,190,113,0.4);
-  }
-  .copy-btn{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    padding:7px 13px;
-    background:var(--blueprint);
-    color:#fff;
-    border:none;
-    border-radius:5px;
-    cursor:pointer;
-  }
-  .copy-btn:hover{background:var(--blueprint-dark);}
-  .copy-btn.copied{background:var(--green);}
-  pre{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12.5px;
-    line-height:1.65;
-    color:var(--code-text);
-    white-space:pre-wrap;
-    word-break:break-word;
-    margin:0 0 30px;
-  }
-  .k{color:var(--code-key);}
-  .s{color:var(--code-str);}
-  .install-note{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11.5px;
-    color:#8AA4C9;
-    border-top:1px dashed #2A4670;
-    padding-top:14px;
-    margin-top:-16px;
-    line-height:1.6;
-  }
-  .install-note code{
-    background:#1E3358;
-    padding:1px 5px;
-    border-radius:3px;
-    color:#DCE6F5;
-  }
+  html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 64px); }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Public Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; }
+  a { color: var(--navy); }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 1.25rem; }
+
+  header.top { background: #12355b; color: #fff; }
+  header.top .wrap { padding-top: 2rem; padding-bottom: 2rem; }
+  header.top .eyebrow { font-size: .85rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #ff8a93; margin: 0 0 .35rem; }
+  header.top h1 { margin: 0 0 .5rem; font-size: clamp(1.7rem, 4.5vw, 2.4rem); font-weight: 800; }
+  header.top p { margin: 0; color: #d6e2ef; max-width: 64ch; }
+
+  nav.steps { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); }
+  nav.steps ol { list-style: none; margin: 0 auto; padding: .5rem 1.25rem; max-width: 920px; display: flex; gap: .25rem; overflow-x: auto; }
+  nav.steps a { display: block; white-space: nowrap; text-decoration: none; font-weight: 600; font-size: .9rem; color: var(--muted); padding: .4rem .7rem; border-radius: 4px; }
+  nav.steps a:hover { background: var(--sky); color: var(--navy); }
+  nav.steps a .n { color: var(--accent); margin-right: .3rem; }
+
+  main { padding: 1.5rem 0 4rem; }
+  section.card { background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--navy); border-radius: 4px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  section.card > h2 { margin: 0 0 .25rem; font-size: 1.3rem; color: var(--navy); font-weight: 800; }
+  .intro { color: var(--muted); margin: 0 0 1rem; max-width: 70ch; }
+  h3 { font-size: 1rem; color: var(--navy); margin: 1.25rem 0 .5rem; }
+
+  .grid { display: grid; gap: .85rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .wide { grid-column: 1 / -1; }
+  label, .lbl { display: block; font-size: .85rem; font-weight: 600; color: var(--ink); margin-bottom: .25rem; }
+  .opt { font-weight: 400; color: var(--muted); }
+  .rec { font-weight: 600; color: var(--accent); font-size: .75rem; margin-left: .25rem; }
+  input, select, textarea { width: 100%; font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 4px; padding: .5rem .6rem; }
+  textarea { min-height: 80px; resize: vertical; }
+  input[type="checkbox"] { width: auto; margin: 0 .4rem 0 0; }
+  input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+  .hint { font-size: .8rem; color: var(--muted); margin-top: .25rem; }
+  .check { display: flex; align-items: center; font-weight: 600; font-size: .9rem; }
+
+  .hours { display: grid; gap: .4rem; }
+  .hours .row { display: grid; grid-template-columns: 7.5rem 1fr 1fr; gap: .5rem; align-items: center; }
+  .hours .row input[type="time"]:disabled { opacity: .45; }
+
+  .item { border: 1px solid var(--line); border-radius: 4px; padding: 1rem; margin-bottom: .85rem; background: var(--bg); }
+  .item-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
+  .item-head strong { color: var(--navy); }
+
+  button { font: inherit; font-weight: 700; border-radius: 4px; padding: .5rem .9rem; cursor: pointer; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+  button:hover { border-color: var(--navy); }
+  button.primary { background: #b3121f; border-color: #b3121f; color: #fff; }
+  button.primary:hover { background: #8e0d18; }
+  button.link { border: 0; background: none; color: var(--accent); padding: .2rem .4rem; font-weight: 600; }
+  .toolbar { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+
+  details.note { background: var(--sky); border-radius: 4px; padding: .75rem 1rem; margin-top: 1rem; }
+  details.note summary { cursor: pointer; font-weight: 700; color: var(--navy); }
+  details.note p { margin: .5rem 0 0; color: var(--ink); }
+
+  .out { border: 1px solid var(--line); border-radius: 4px; margin-bottom: 1.25rem; overflow: hidden; }
+  .out-head { display: flex; flex-wrap: wrap; gap: .5rem 1rem; justify-content: space-between; align-items: center; padding: .85rem 1rem; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .out-head h3 { margin: 0; }
+  .out-where { font-size: .85rem; color: var(--muted); margin: .15rem 0 0; }
+  .badge { font-size: .8rem; font-weight: 700; padding: .15rem .55rem; border-radius: 3px; }
+  .badge.ok { background: var(--ok-bg); color: var(--ok); }
+  .badge.warn { background: var(--warn-bg); color: var(--warn); }
+  .badge.off { background: var(--sky); color: var(--muted); }
+  .issues { margin: 0; padding: .75rem 1rem .75rem 2.25rem; background: var(--warn-bg); color: var(--warn); font-size: .9rem; }
+  pre { margin: 0; background: var(--code-bg); color: var(--code-ink); padding: 1rem; overflow-x: auto; font-size: .8rem; line-height: 1.45; max-height: 420px; }
+  .status { font-weight: 600; color: var(--ok); min-height: 1.3rem; font-size: .9rem; }
+
+  .how { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .how div { border-top: 3px solid var(--navy); padding-top: .6rem; }
+  .how p { margin: 0; color: var(--muted); font-size: .92rem; }
+  ol.test { padding-left: 1.25rem; margin: .5rem 0 0; }
+  ol.test li { margin-bottom: .35rem; }
+
+  footer.foot { border-top: 1px solid var(--line); padding: 1.5rem 0 2.5rem; color: var(--muted); font-size: .9rem; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
 <body>
-
-<header>
-  <p class="eyebrow">Schema Markup / JSON-LD Toolkit</p>
-  <h1>Fillable Schema Generator</h1>
-  <p class="sub">Fill in your business's real details on the left. Ready-to-paste JSON-LD code builds itself on the right — copy it into the &lt;head&gt; of your website, or hand it to whoever manages your site.</p>
+<header class="top">
+  <div class="wrap">
+    <p class="eyebrow">Free tool · Miami Valley SBDC</p>
+    <h1>Schema Markup Generator</h1>
+    <p>Describe your business once, and get ready-to-paste code that helps Google and AI answer engines like ChatGPT, Perplexity and Google's AI Overviews understand who you are, what you do and where you work.</p>
+  </div>
 </header>
 
-<div class="layout">
-  <div class="form-pane">
+<nav class="steps" aria-label="Sections">
+  <ol>
+    <li><a href="#s-business"><span class="n">1</span>Business</a></li>
+    <li><a href="#s-services"><span class="n">2</span>Services</a></li>
+    <li><a href="#s-people"><span class="n">3</span>People</a></li>
+    <li><a href="#s-faqs"><span class="n">4</span>FAQs</a></li>
+    <li><a href="#s-events"><span class="n">5</span>Events</a></li>
+    <li><a href="#s-code"><span class="n">6</span>Get your code</a></li>
+  </ol>
+</nav>
 
-    <div class="tabs">
-      <button class="tab active" data-tab="biz">Business Info</button>
-      <button class="tab" data-tab="faq">FAQ</button>
-      <button class="tab" data-tab="review">Reviews</button>
-      <button class="tab" data-tab="person">Author / Owner</button>
-    </div>
-
-    <!-- BUSINESS PANEL -->
-    <div class="panel active" id="panel-biz">
-      <div class="section-title">Core Identity</div>
-
-      <div class="field-group">
-        <label>Business Name <span class="req">*</span></label>
-        <input id="b-name" placeholder="e.g. Maple Street Dental" oninput="render()">
-      </div>
-
-      <div class="field-group">
-        <label>Business Type</label>
-        <select id="b-type" onchange="render()">
-          <option value="LocalBusiness">General (LocalBusiness)</option>
-          <option value="Restaurant">Restaurant</option>
-          <option value="Dentist">Dentist</option>
-          <option value="Plumber">Plumber</option>
-          <option value="Electrician">Electrician</option>
-          <option value="HairSalon">Hair Salon</option>
-          <option value="AutoRepair">Auto Repair</option>
-          <option value="RealEstateAgent">Real Estate Agent</option>
-          <option value="LegalService">Legal Service</option>
-          <option value="MedicalBusiness">Medical Practice</option>
-          <option value="Store">Retail Store</option>
-        </select>
-        <p class="hint">Pick the closest match. This tells search engines what kind of business you are.</p>
-      </div>
-
-      <div class="field-group">
-        <label>Website URL <span class="req">*</span></label>
-        <input id="b-url" placeholder="https://www.yourbusiness.com" oninput="render()">
-      </div>
-
-      <div class="field-group">
-        <label>Logo / Photo URL</label>
-        <input id="b-image" placeholder="https://www.yourbusiness.com/logo.png" oninput="render()">
-      </div>
-
-      <div class="section-title">Contact & Location</div>
-
-      <div class="field-group">
-        <label>Phone Number <span class="req">*</span></label>
-        <input id="b-phone" placeholder="+1-614-555-0100" oninput="render()">
-      </div>
-
-      <div class="field-group">
-        <label>Street Address <span class="req">*</span></label>
-        <input id="b-street" placeholder="123 Maple St" oninput="render()">
-      </div>
-
-      <div class="field-row">
-        <div class="field-group">
-          <label>City <span class="req">*</span></label>
-          <input id="b-city" placeholder="Columbus" oninput="render()">
-        </div>
-        <div class="field-group">
-          <label>State</label>
-          <input id="b-state" placeholder="OH" oninput="render()">
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-group">
-          <label>ZIP Code</label>
-          <input id="b-zip" placeholder="43215" oninput="render()">
-        </div>
-        <div class="field-group">
-          <label>Price Range</label>
-          <select id="b-price" onchange="render()">
-            <option value="">— none —</option>
-            <option value="$">$</option>
-            <option value="$$">$$</option>
-            <option value="$$$">$$$</option>
-            <option value="$$$$">$$$$</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="section-title">Hours</div>
-      <div class="field-group">
-        <label>Opening Hours</label>
-        <input id="b-hours" placeholder="Mo-Fr 09:00-17:00, Sa 10:00-14:00" oninput="render()">
-        <p class="hint">Format: Days Open-Close, comma separated. Use standard abbreviations (Mo, Tu, We, Th, Fr, Sa, Su).</p>
-      </div>
-
-      <div class="section-title">Social Profiles (optional)</div>
-      <div class="field-group">
-        <label>Facebook / Instagram / LinkedIn / Yelp URLs</label>
-        <textarea id="b-social" placeholder="One per line, e.g.&#10;https://www.facebook.com/yourbusiness&#10;https://www.yelp.com/biz/yourbusiness" oninput="render()"></textarea>
-        <p class="hint">Linking your social profiles helps confirm you're a real, consistent business across the web — good for GEO.</p>
-      </div>
-    </div>
-
-    <!-- FAQ PANEL -->
-    <div class="panel" id="panel-faq">
-      <div class="section-title">Frequently Asked Questions</div>
-      <p class="hint" style="margin-bottom:16px;">This is the single highest-value schema for AEO/GEO. Write questions the way real customers ask them, and answer in plain, complete sentences — AI answer engines lift these directly.</p>
-      <div id="faq-list"></div>
-      <button class="add-btn" onclick="addFaq()">+ Add another question</button>
-    </div>
-
-    <!-- REVIEW PANEL -->
-    <div class="panel" id="panel-review">
-      <div class="section-title">Rating Summary</div>
-      <p class="hint" style="margin-bottom:16px;">Only use this if the numbers are real and verifiable (e.g. from Google, Yelp, or your own collected reviews). Fake or unverifiable ratings violate Google's guidelines and can get a site penalized.</p>
-
-      <div class="field-row">
-        <div class="field-group">
-          <label>Average Rating (1–5)</label>
-          <input id="r-value" type="number" min="1" max="5" step="0.1" placeholder="4.8" oninput="render()">
-        </div>
-        <div class="field-group">
-          <label>Number of Reviews</label>
-          <input id="r-count" type="number" min="1" placeholder="127" oninput="render()">
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label>Where these reviews are from</label>
-        <input id="r-source" placeholder="e.g. Google, Yelp, Facebook" oninput="render()">
-      </div>
-    </div>
-
-    <!-- PERSON PANEL -->
-    <div class="panel" id="panel-person">
-      <div class="section-title">Owner / Author Profile</div>
-      <p class="hint" style="margin-bottom:16px;">Use this on About pages or blog posts to reinforce E-E-A-T — it tells search engines and AI systems a real, credentialed person stands behind the content.</p>
-
-      <div class="field-group">
-        <label>Full Name</label>
-        <input id="p-name" placeholder="Jane Smith" oninput="render()">
-      </div>
-
-      <div class="field-group">
-        <label>Job Title / Credential</label>
-        <input id="p-title" placeholder="Owner & Licensed Master Plumber" oninput="render()">
-      </div>
-
-      <div class="field-group">
-        <label>Bio / Profile Page URL</label>
-        <input id="p-url" placeholder="https://www.yourbusiness.com/about/jane-smith" oninput="render()">
-      </div>
-
-      <div class="field-group">
-        <label>Photo URL</label>
-        <input id="p-image" placeholder="https://www.yourbusiness.com/team/jane.jpg" oninput="render()">
-      </div>
-    </div>
-
+<main class="wrap">
+  <div class="toolbar" style="margin-bottom:1.25rem">
+    <button type="button" id="exampleBtn">Fill in an example</button>
+    <button type="button" id="clearBtn">Clear everything</button>
+    <span class="hint">Your answers are saved in this browser as you type.</span>
   </div>
 
-  <div class="code-pane">
-    <div class="code-header">
-      <span class="code-title">JSON-LD Output</span>
+  <!-- 1 BUSINESS -->
+  <section class="card" id="s-business" aria-labelledby="h-business">
+    <h2 id="h-business">1. Your business</h2>
+    <p class="intro">This is the most important part. Fields marked <span class="rec" style="margin:0">recommended</span> matter most for search and AI answers. Use the same name, address and phone number you use on Google, Facebook and everywhere else.</p>
+    <div class="grid">
+      <div class="wide">
+        <label for="b-type">Type of business</label>
+        <select id="b-type" data-b="type"></select>
+        <div class="hint">Pick the closest match. A specific type helps answer engines connect you to the right questions.</div>
+      </div>
+      <div><label for="b-name">Business name <span class="rec">required</span></label><input id="b-name" data-b="name" autocomplete="organization"></div>
+      <div><label for="b-url">Website address <span class="rec">required</span></label><input id="b-url" data-b="url" type="url" placeholder="https://www.example.com"></div>
+      <div class="wide">
+        <label for="b-desc">Short description <span class="rec">recommended</span></label>
+        <textarea id="b-desc" data-b="description" placeholder="One or two plain sentences: what you do, for whom, and where."></textarea>
+      </div>
+      <div><label for="b-phone">Phone <span class="rec">recommended</span></label><input id="b-phone" data-b="phone" type="tel" placeholder="937-555-0123"></div>
+      <div><label for="b-email">Email <span class="opt">(optional)</span></label><input id="b-email" data-b="email" type="email"></div>
+      <div><label for="b-logo">Logo image address <span class="rec">recommended</span></label><input id="b-logo" data-b="logo" type="url" placeholder="https://…/logo.png"></div>
+      <div><label for="b-image">Photo address <span class="opt">(optional)</span></label><input id="b-image" data-b="image" type="url" placeholder="https://…/storefront.jpg"></div>
     </div>
-    <div id="output"></div>
-    <p class="install-note">
-      Paste each block inside a <code>&lt;script type="application/ld+json"&gt;</code> tag in your page's <code>&lt;head&gt;</code>. Put Business Info on every page (or at least the homepage), FAQ schema only on the page where that FAQ content actually appears, and Person schema on the relevant author/about page. Test everything with Google's Rich Results Test before publishing.
-    </p>
+
+    <h3>Address</h3>
+    <label class="check"><input type="checkbox" id="b-hide" data-b="hideStreet">I serve customers at their location and don't want to show a street address</label>
+    <div class="grid" style="margin-top:.6rem">
+      <div class="wide" id="streetWrap"><label for="b-street">Street address <span class="rec">recommended</span></label><input id="b-street" data-b="street" autocomplete="street-address"></div>
+      <div><label for="b-city">City <span class="rec">recommended</span></label><input id="b-city" data-b="city" autocomplete="address-level2"></div>
+      <div><label for="b-region">State</label><input id="b-region" data-b="region" placeholder="OH" autocomplete="address-level1"></div>
+      <div><label for="b-postal">ZIP code</label><input id="b-postal" data-b="postal" autocomplete="postal-code"></div>
+      <div><label for="b-country">Country</label><input id="b-country" data-b="country" placeholder="US"></div>
+      <div class="wide">
+        <label for="b-area">Areas you serve <span class="rec">recommended</span></label>
+        <input id="b-area" data-b="areaServed" placeholder="Dayton, Kettering, Montgomery County">
+        <div class="hint">Separate with commas. Cities, counties or regions.</div>
+      </div>
+    </div>
+
+    <h3>Hours</h3>
+    <div class="hours" id="hours"></div>
+    <div class="hint">Leave all days unchecked if you work by appointment only.</div>
+
+    <h3>Your profiles elsewhere <span class="rec">recommended</span></h3>
+    <label for="b-sameas" class="sr">Profile links</label>
+    <textarea id="b-sameas" data-b="sameAs" placeholder="https://www.facebook.com/yourbusiness&#10;https://www.linkedin.com/company/yourbusiness&#10;https://maps.google.com/?cid=…"></textarea>
+    <div class="hint">One link per line: Facebook, LinkedIn, Instagram, Google Business Profile, Yelp, industry directories. This is one of the strongest signals for AI answer engines, because it confirms all these profiles belong to the same business.</div>
+
+    <div class="grid" style="margin-top:.85rem">
+      <div><label for="b-price">Price range <span class="opt">(optional)</span></label><input id="b-price" data-b="priceRange" placeholder="$$ or $20–$50"></div>
+    </div>
+
+    <details class="note">
+      <summary>Why is there no star rating section?</summary>
+      <p>Google doesn't allow businesses to mark up reviews of themselves on their own website, and ignores that markup for local businesses. Marking up ratings copied from Google, Yelp or Facebook can even lead to a spam penalty. The best way to benefit from reviews is to keep collecting them on your Google Business Profile, which search engines and AI tools read directly.</p>
+    </details>
+  </section>
+
+  <!-- 2 SERVICES -->
+  <section class="card" id="s-services" aria-labelledby="h-services">
+    <h2 id="h-services">2. Services or products</h2>
+    <p class="intro">List your main services, so an AI answering "who does ___ near me?" can match you to them. Use the words your customers would search for.</p>
+    <div id="list-services"></div>
+    <button type="button" data-add="services">+ Add a service</button>
+  </section>
+
+  <!-- 3 PEOPLE -->
+  <section class="card" id="s-people" aria-labelledby="h-people">
+    <h2 id="h-people">3. People <span class="opt" style="font-size:1rem">(optional)</span></h2>
+    <p class="intro">Add the owner or key experts. Credentials and expertise help answer engines judge whether your business is a trustworthy source.</p>
+    <div id="list-people"></div>
+    <button type="button" data-add="people">+ Add a person</button>
+  </section>
+
+  <!-- 4 FAQS -->
+  <section class="card" id="s-faqs" aria-labelledby="h-faqs">
+    <h2 id="h-faqs">4. Frequently asked questions <span class="opt" style="font-size:1rem">(optional)</span></h2>
+    <p class="intro">FAQ markup is one of the most useful types for AI answers. The questions and answers must also appear, word for word, on the page where you put this code.</p>
+    <div class="grid" style="margin-bottom:1rem">
+      <div class="wide"><label for="faq-url">Address of the page where these FAQs appear</label><input id="faq-url" data-f="faqUrl" type="url" placeholder="https://www.example.com/faq/"></div>
+    </div>
+    <div id="list-faqs"></div>
+    <button type="button" data-add="faqs">+ Add a question</button>
+    <details class="note">
+      <summary>Why don't my FAQs show up specially in Google?</summary>
+      <p>Since 2023, Google only shows expandable FAQ results for government and health websites. The markup is still worth adding: AI answer engines and other search engines read it to understand your answers.</p>
+    </details>
+  </section>
+
+  <!-- 5 EVENTS -->
+  <section class="card" id="s-events" aria-labelledby="h-events">
+    <h2 id="h-events">5. Events <span class="opt" style="font-size:1rem">(optional)</span></h2>
+    <p class="intro">Classes, workshops, tastings, grand openings. Event markup can still earn special listings in Google search.</p>
+    <div id="list-events"></div>
+    <button type="button" data-add="events">+ Add an event</button>
+  </section>
+
+  <!-- 6 CODE -->
+  <section class="card" id="s-code" aria-labelledby="h-code">
+    <h2 id="h-code">6. Get your code</h2>
+    <p class="intro">Each block below is ready to paste exactly as it is. Don't wrap it in anything else. Empty fields are left out automatically.</p>
+    <div id="outputs"></div>
+
+    <h3>Where to paste it</h3>
+    <div class="how">
+      <div><strong>WordPress</strong><p>Edit the page, add a <em>Custom HTML</em> block (or an HTML widget in Elementor) and paste. It won't show visually.</p></div>
+      <div><strong>Wix</strong><p>Page settings → SEO basics → Advanced SEO → Structured data markup, or use an Embed Code element.</p></div>
+      <div><strong>Squarespace</strong><p>Add a <em>Code</em> block to the page, or use Page settings → Advanced → Page header code injection.</p></div>
+      <div><strong>Anything else</strong><p>Paste it anywhere in the page's HTML. The page header isn't required; search engines read it anywhere on the page.</p></div>
+    </div>
+
+    <h3>Test it</h3>
+    <ol class="test">
+      <li><a href="https://validator.schema.org/">Schema.org Validator</a>: paste your page address to check every block is valid.</li>
+      <li><a href="https://search.google.com/test/rich-results">Google Rich Results Test</a>: shows what Google can use for special search listings.</li>
+      <li>Update this code whenever your hours, services, address or phone number change. Outdated details get repeated in AI answers.</li>
+    </ol>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    A free tool from the <a href="https://sbdcec.com/">Miami Valley Small Business Development Center</a>. Want help with your website or marketing? <a href="https://clients.ohiosbdc.ohio.gov/reg.aspx?mode=counsel&amp;center=17047&amp;subloc=0">Request free one-on-one advising</a> or call <a href="tel:+19372109460">937-210-9460</a>.
   </div>
-</div>
+</footer>
 
 <script>
-let faqCount = 0;
+(function () {
+  var TYPES = [
+    ['LocalBusiness', 'General local business'],
+    ['ProfessionalService', 'Professional service (consulting, marketing, design)'],
+    ['AccountingService', 'Accounting / bookkeeping'],
+    ['LegalService', 'Legal service'],
+    ['FinancialService', 'Financial service'],
+    ['InsuranceAgency', 'Insurance agency'],
+    ['RealEstateAgent', 'Real estate agent'],
+    ['EmploymentAgency', 'Staffing / employment agency'],
+    ['HomeAndConstructionBusiness', 'Home services / construction'],
+    ['GeneralContractor', 'General contractor'],
+    ['Electrician', 'Electrician'],
+    ['Plumber', 'Plumber'],
+    ['HVACBusiness', 'Heating & air conditioning'],
+    ['RoofingContractor', 'Roofing contractor'],
+    ['HousePainter', 'Painter'],
+    ['Locksmith', 'Locksmith'],
+    ['MovingCompany', 'Moving company'],
+    ['AutoRepair', 'Auto repair'],
+    ['AutomotiveBusiness', 'Other automotive'],
+    ['Restaurant', 'Restaurant'],
+    ['CafeOrCoffeeShop', 'Café / coffee shop'],
+    ['Bakery', 'Bakery'],
+    ['BarOrPub', 'Bar / pub'],
+    ['FoodEstablishment', 'Other food business (food truck, caterer)'],
+    ['Store', 'Retail store'],
+    ['ClothingStore', 'Clothing store'],
+    ['BeautySalon', 'Beauty salon'],
+    ['HairSalon', 'Hair salon / barber'],
+    ['NailSalon', 'Nail salon'],
+    ['DaySpa', 'Day spa'],
+    ['HealthClub', 'Gym / fitness studio'],
+    ['MedicalBusiness', 'Medical / health practice'],
+    ['Dentist', 'Dentist'],
+    ['VeterinaryCare', 'Veterinary care'],
+    ['ChildCare', 'Child care'],
+    ['LodgingBusiness', 'Lodging (inn, B&B)'],
+    ['TravelAgency', 'Travel agency'],
+    ['EntertainmentBusiness', 'Entertainment'],
+    ['SportsActivityLocation', 'Sports / recreation'],
+    ['Organization', 'Online business or nonprofit (no storefront)']
+  ];
+  var DAYS = [['Monday','Mon'],['Tuesday','Tue'],['Wednesday','Wed'],['Thursday','Thu'],['Friday','Fri'],['Saturday','Sat'],['Sunday','Sun']];
+  var KEY = 'sbdc-schema-generator-v2';
 
-function addFaq(q, a){
-  faqCount++;
-  const id = faqCount;
-  const wrap = document.createElement('div');
-  wrap.className = 'faq-item';
-  wrap.id = 'faq-' + id;
-  wrap.innerHTML = `
-    <button class="faq-remove" onclick="removeFaq(${id})">&times;</button>
-    <div class="field-group">
-      <label>Question</label>
-      <input id="faq-q-${id}" placeholder="Do you offer emergency service?" value="${q||''}" oninput="render()">
-    </div>
-    <div class="field-group" style="margin-bottom:0;">
-      <label>Answer</label>
-      <textarea id="faq-a-${id}" placeholder="Yes, we offer 24/7 emergency plumbing service throughout the Columbus area, with a guaranteed response time of under an hour." oninput="render()">${a||''}</textarea>
-    </div>
-  `;
-  document.getElementById('faq-list').appendChild(wrap);
-}
-
-function removeFaq(id){
-  const el = document.getElementById('faq-' + id);
-  if(el) el.remove();
-  render();
-}
-
-function esc(str){
-  return (str||'').replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,' ').trim();
-}
-
-function highlightJson(obj){
-  let str = JSON.stringify(obj, null, 2);
-  str = str.replace(/"([^"]+)":/g, '<span class="k">"$1"</span>:');
-  str = str.replace(/: "([^"]*)"/g, ': <span class="s">"$1"</span>');
-  return str;
-}
-
-function copyBlock(id, btn){
-  const text = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(text).then(()=>{
-    const old = btn.innerText;
-    btn.innerText = 'Copied ✓';
-    btn.classList.add('copied');
-    setTimeout(()=>{ btn.innerText = old; btn.classList.remove('copied'); }, 1600);
-  });
-}
-
-function block(title, obj, complete){
-  const codeId = 'code-' + title.replace(/\s+/g,'-').toLowerCase();
-  return `
-    <div class="code-header" style="margin-top:26px;">
-      <span class="code-title">${title} <span class="stamp ${complete ? '' : 'incomplete'}">${complete ? 'ready to paste' : 'fill required fields'}</span></span>
-      <button class="copy-btn" onclick="copyBlock('${codeId}', this)">Copy</button>
-    </div>
-    <pre id="${codeId}">&lt;script type="application/ld+json"&gt;
-${highlightJson(obj)}
-&lt;/script&gt;</pre>
-  `;
-}
-
-function render(){
-  let out = '';
-
-  // BUSINESS
-  const name = document.getElementById('b-name').value.trim();
-  const type = document.getElementById('b-type').value;
-  const url = document.getElementById('b-url').value.trim();
-  const image = document.getElementById('b-image').value.trim();
-  const phone = document.getElementById('b-phone').value.trim();
-  const street = document.getElementById('b-street').value.trim();
-  const city = document.getElementById('b-city').value.trim();
-  const state = document.getElementById('b-state').value.trim();
-  const zip = document.getElementById('b-zip').value.trim();
-  const price = document.getElementById('b-price').value;
-  const hours = document.getElementById('b-hours').value.trim();
-  const social = document.getElementById('b-social').value.split('\n').map(s=>s.trim()).filter(Boolean);
-
-  const bizObj = {
-    "@context": "https://schema.org",
-    "@type": type || "LocalBusiness",
+  var LISTS = {
+    services: { label: 'Service', fields: [
+      ['name', 'Service name', 'text', 'e.g. Kitchen remodeling', true],
+      ['description', 'Short description', 'textarea', 'What it includes, in plain words', false, true],
+      ['area', 'Where you offer it (optional)', 'text', 'Leave empty to use your business service area']
+    ]},
+    people: { label: 'Person', fields: [
+      ['name', 'Name', 'text', '', true],
+      ['jobTitle', 'Job title', 'text', 'e.g. Owner, Lead Designer'],
+      ['owner', 'This person owns or founded the business', 'checkbox'],
+      ['url', 'Their bio page (optional)', 'url', 'https://…/about/'],
+      ['image', 'Photo address (optional)', 'url', 'https://…/photo.jpg'],
+      ['sameAs', 'Their LinkedIn or other profiles (one per line)', 'textarea', 'https://www.linkedin.com/in/…', false, true],
+      ['knowsAbout', 'Areas of expertise (comma-separated)', 'text', 'e.g. bookkeeping, payroll, small business taxes', false, true],
+      ['credentials', 'Licenses or certifications (comma-separated, optional)', 'text', 'e.g. CPA, Ohio licensed electrician', false, true]
+    ]},
+    faqs: { label: 'Question', fields: [
+      ['q', 'Question', 'text', 'e.g. Do you offer free estimates?', true, true],
+      ['a', 'Answer', 'textarea', 'Answer it fully in the first sentence, then add detail.', true, true]
+    ]},
+    events: { label: 'Event', fields: [
+      ['name', 'Event name', 'text', '', true, true],
+      ['start', 'Starts', 'datetime-local', '', true],
+      ['end', 'Ends', 'datetime-local', ''],
+      ['mode', 'Where', 'select', [['inperson','In person'],['online','Online'],['mixed','Both in person and online']]],
+      ['venue', 'Venue name', 'text', 'e.g. Our showroom', false, false, 'inperson'],
+      ['street', 'Street address', 'text', '', false, false, 'inperson'],
+      ['city', 'City', 'text', '', false, false, 'inperson'],
+      ['region', 'State', 'text', '', false, false, 'inperson'],
+      ['postal', 'ZIP code', 'text', '', false, false, 'inperson'],
+      ['onlineUrl', 'Online meeting or livestream link', 'url', 'https://…', false, true, 'online'],
+      ['url', 'Event or registration page', 'url', 'https://…', false, true],
+      ['description', 'Description', 'textarea', '', false, true],
+      ['image', 'Event image address (optional)', 'url', 'https://…', false, true],
+      ['free', 'This event is free', 'checkbox'],
+      ['price', 'Price in dollars (if not free)', 'text', 'e.g. 25']
+    ]}
   };
-  if(name) bizObj.name = name;
-  if(url) bizObj.url = url;
-  if(image) bizObj.image = image;
-  if(phone) bizObj.telephone = phone;
-  if(street || city || state || zip){
-    bizObj.address = { "@type": "PostalAddress" };
-    if(street) bizObj.address.streetAddress = street;
-    if(city) bizObj.address.addressLocality = city;
-    if(state) bizObj.address.addressRegion = state;
-    if(zip) bizObj.address.postalCode = zip;
-    bizObj.address.addressCountry = "US";
+
+  function blank() {
+    var hours = {};
+    DAYS.forEach(function (d, i) { hours[d[0]] = { open: i < 5, from: '09:00', to: '17:00' }; });
+    return {
+      biz: { type: 'LocalBusiness', name: '', url: '', description: '', phone: '', email: '', logo: '', image: '',
+             hideStreet: false, street: '', city: '', region: '', postal: '', country: 'US', areaServed: '',
+             sameAs: '', priceRange: '', hours: hours },
+      faqUrl: '', services: [], people: [], faqs: [], events: []
+    };
   }
-  if(price) bizObj.priceRange = price;
-  if(hours) bizObj.openingHours = hours;
-  if(social.length) bizObj.sameAs = social;
+  var state = load();
+  function load() {
+    try { var v = JSON.parse(localStorage.getItem(KEY)); if (v && v.biz) return Object.assign(blank(), v); } catch (e) {}
+    return blank();
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function uid() { return Math.random().toString(36).slice(2, 9); }
 
-  const bizComplete = !!(name && url && phone && street && city);
-  out += block('Business Info', bizObj, bizComplete);
+  /* ---------- form: business ---------- */
+  var sel = document.getElementById('b-type');
+  sel.innerHTML = TYPES.map(function (t) { return '<option value="' + t[0] + '">' + esc(t[1]) + '</option>'; }).join('');
 
-  // FAQ
-  const faqItems = [];
-  document.querySelectorAll('#faq-list .faq-item').forEach(item=>{
-    const q = item.querySelector('input').value.trim();
-    const a = item.querySelector('textarea').value.trim();
-    if(q && a){
-      faqItems.push({
-        "@type": "Question",
-        "name": q,
-        "acceptedAnswer": { "@type": "Answer", "text": a }
-      });
+  function fillBusiness() {
+    document.querySelectorAll('[data-b]').forEach(function (el) {
+      var k = el.getAttribute('data-b');
+      if (el.type === 'checkbox') el.checked = !!state.biz[k]; else el.value = state.biz[k] || '';
+    });
+    document.getElementById('faq-url').value = state.faqUrl || '';
+    document.getElementById('streetWrap').hidden = !!state.biz.hideStreet;
+    var h = document.getElementById('hours');
+    h.innerHTML = DAYS.map(function (d) {
+      var v = state.biz.hours[d[0]] || { open: false, from: '09:00', to: '17:00' };
+      return '<div class="row"><label class="check"><input type="checkbox" data-h="' + d[0] + '" data-hk="open"' + (v.open ? ' checked' : '') + '>' + d[1] + '</label>' +
+        '<input type="time" aria-label="' + d[0] + ' opens" data-h="' + d[0] + '" data-hk="from" value="' + esc(v.from) + '"' + (v.open ? '' : ' disabled') + '>' +
+        '<input type="time" aria-label="' + d[0] + ' closes" data-h="' + d[0] + '" data-hk="to" value="' + esc(v.to) + '"' + (v.open ? '' : ' disabled') + '></div>';
+    }).join('');
+  }
+  document.getElementById('s-business').addEventListener('input', function (e) {
+    var el = e.target, k = el.getAttribute('data-b'), d = el.getAttribute('data-h');
+    if (k) {
+      state.biz[k] = el.type === 'checkbox' ? el.checked : el.value;
+      if (k === 'hideStreet') document.getElementById('streetWrap').hidden = el.checked;
+    } else if (d) {
+      var hk = el.getAttribute('data-hk');
+      state.biz.hours[d][hk] = el.type === 'checkbox' ? el.checked : el.value;
+      if (hk === 'open') document.querySelectorAll('input[type="time"][data-h="' + d + '"]').forEach(function (t) { t.disabled = !el.checked; });
     }
+    update();
   });
-  if(faqItems.length){
-    const faqObj = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": faqItems
-    };
-    out += block('FAQ Page', faqObj, true);
-  } else {
-    out += block('FAQ Page', {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[/* add a question on the left */]}, false);
+  document.getElementById('faq-url').addEventListener('input', function (e) { state.faqUrl = e.target.value; update(); });
+
+  /* ---------- form: repeatable lists ---------- */
+  function renderList(name) {
+    var spec = LISTS[name], box = document.getElementById('list-' + name), items = state[name];
+    if (!items.length) { box.innerHTML = '<p class="hint" style="margin:.25rem 0 .75rem">None added yet.</p>'; return; }
+    box.innerHTML = items.map(function (it, i) {
+      var html = '<div class="item" data-list="' + name + '" data-id="' + it.id + '"><div class="item-head"><strong>' + spec.label + ' ' + (i + 1) + '</strong>' +
+        '<button type="button" class="link" data-remove="' + name + '" data-id="' + it.id + '">Remove<span class="sr"> ' + spec.label.toLowerCase() + ' ' + (i + 1) + '</span></button></div><div class="grid">';
+      spec.fields.forEach(function (f) {
+        var key = f[0], lab = f[1], type = f[2], ph = f[3], req = f[4], wide = f[5], showFor = f[6];
+        if (showFor && it.mode !== showFor && it.mode !== 'mixed') return;
+        if (name === 'events' && key === 'price' && it.free) return;
+        var id = name + '-' + it.id + '-' + key;
+        var cls = (wide || type === 'textarea' || type === 'checkbox') ? 'wide' : '';
+        if (type === 'checkbox') {
+          html += '<div class="' + cls + '"><label class="check"><input type="checkbox" id="' + id + '" data-k="' + key + '"' + (it[key] ? ' checked' : '') + '>' + esc(lab) + '</label></div>';
+        } else if (type === 'select') {
+          html += '<div class="' + cls + '"><label for="' + id + '">' + esc(lab) + '</label><select id="' + id + '" data-k="' + key + '">' +
+            ph.map(function (o) { return '<option value="' + o[0] + '"' + (it[key] === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>';
+        } else if (type === 'textarea') {
+          html += '<div class="' + cls + '"><label for="' + id + '">' + esc(lab) + (req ? ' <span class="rec">required</span>' : '') + '</label><textarea id="' + id + '" data-k="' + key + '" placeholder="' + esc(ph) + '">' + esc(it[key]) + '</textarea></div>';
+        } else {
+          html += '<div class="' + cls + '"><label for="' + id + '">' + esc(lab) + (req ? ' <span class="rec">required</span>' : '') + '</label><input id="' + id + '" type="' + type + '" data-k="' + key + '" value="' + esc(it[key]) + '" placeholder="' + esc(ph) + '"></div>';
+        }
+      });
+      return html + '</div></div>';
+    }).join('');
   }
+  function renderLists() { Object.keys(LISTS).forEach(renderList); }
 
-  // REVIEW
-  const rValue = document.getElementById('r-value').value;
-  const rCount = document.getElementById('r-count').value;
-  const rSource = document.getElementById('r-source').value.trim();
-  if(rValue && rCount && name){
-    const reviewObj = {
-      "@context": "https://schema.org",
-      "@type": type || "LocalBusiness",
-      "name": name,
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": rValue,
-        "reviewCount": rCount
-      }
-    };
-    if(rSource) reviewObj.aggregateRating.description = "Based on reviews from " + rSource;
-    out += block('Review Summary', reviewObj, true);
-  } else {
-    out += block('Review Summary', {"@context":"https://schema.org","@type":"LocalBusiness","aggregateRating":{"@type":"AggregateRating","ratingValue":"—","reviewCount":"—"}}, false);
-  }
-
-  // PERSON
-  const pName = document.getElementById('p-name').value.trim();
-  const pTitle = document.getElementById('p-title').value.trim();
-  const pUrl = document.getElementById('p-url').value.trim();
-  const pImage = document.getElementById('p-image').value.trim();
-  if(pName){
-    const personObj = {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      "name": pName
-    };
-    if(pTitle) personObj.jobTitle = pTitle;
-    if(pUrl) personObj.url = pUrl;
-    if(pImage) personObj.image = pImage;
-    if(name) personObj.worksFor = { "@type": "Organization", "name": name };
-    out += block('Owner / Author', personObj, true);
-  } else {
-    out += block('Owner / Author', {"@context":"https://schema.org","@type":"Person","name":"—"}, false);
-  }
-
-  document.getElementById('output').innerHTML = out;
-}
-
-document.querySelectorAll('.tab').forEach(tab=>{
-  tab.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  document.querySelectorAll('[data-add]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var name = b.getAttribute('data-add'), it = { id: uid() };
+      if (name === 'events') { it.mode = 'inperson'; it.free = true; }
+      state[name].push(it); renderList(name); update();
+      var first = document.querySelector('[data-id="' + it.id + '"] input, [data-id="' + it.id + '"] textarea');
+      if (first) first.focus();
+    });
   });
-});
+  document.querySelector('main').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-remove]'); if (!b) return;
+    var name = b.getAttribute('data-remove'), id = b.getAttribute('data-id');
+    state[name] = state[name].filter(function (x) { return x.id !== id; });
+    renderList(name); update();
+  });
+  function onItem(e) {
+    var el = e.target, k = el.getAttribute('data-k'), box = el.closest('.item'); if (!k || !box) return;
+    var list = box.getAttribute('data-list'), it = state[list].filter(function (x) { return x.id === box.getAttribute('data-id'); })[0];
+    it[k] = el.type === 'checkbox' ? el.checked : el.value;
+    if (e.type === 'change' && (k === 'mode' || k === 'free')) { renderList(list); var again = document.getElementById(el.id); if (again) again.focus(); }
+    update();
+  }
+  ['services','people','faqs','events'].forEach(function (n) {
+    var box = document.getElementById('list-' + n);
+    box.addEventListener('input', onItem); box.addEventListener('change', onItem);
+  });
 
-addFaq('Do you offer free estimates?', 'Yes, we provide free, no-obligation estimates for all projects. Call or fill out our contact form to schedule a visit.');
-render();
+  /* ---------- building the schema ---------- */
+  function normUrl(u) {
+    u = (u || '').trim(); if (!u) return '';
+    if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+    return u;
+  }
+  function base() { return normUrl(state.biz.url).replace(/[#?].*$/, '').replace(/\/+$/, ''); }
+  function lines(s) { return String(s || '').split(/[\n,\s]+/).map(function (x) { return x.trim(); }).filter(function (x) { return /^https?:\/\//i.test(x); }); }
+  function list(s) { return String(s || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean); }
+  function slug(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'item'; }
+  function clean(v) {
+    if (Array.isArray(v)) { var a = v.map(clean).filter(function (x) { return x !== undefined; }); return a.length ? a : undefined; }
+    if (v && typeof v === 'object') {
+      var o = {}, keys = Object.keys(v), meaningful = false;
+      keys.forEach(function (k) { var c = clean(v[k]); if (c !== undefined) { o[k] = c; if (k !== '@type') meaningful = true; } });
+      return meaningful ? o : undefined;
+    }
+    if (typeof v === 'string') { v = v.trim(); return v ? v : undefined; }
+    return v === null || v === false ? undefined : v;
+  }
+  function one(a) { return a && a.length === 1 ? a[0] : a; }
+  function tz(dt) {
+    var d = new Date(dt); if (isNaN(d)) return '';
+    var off = -d.getTimezoneOffset(), s = off >= 0 ? '+' : '-'; off = Math.abs(off);
+    return s + String(Math.floor(off / 60)).padStart(2, '0') + ':' + String(off % 60).padStart(2, '0');
+  }
+  function dateTime(v) { return v ? (v.length === 16 ? v + ':00' : v) + tz(v) : ''; }
+
+  function bizId() { return base() ? base() + '/#business' : '#business'; }
+  function bizRef() { return { '@type': state.biz.type, '@id': bizId(), name: state.biz.name, url: normUrl(state.biz.url) }; }
+  function address(o) {
+    return { '@type': 'PostalAddress', streetAddress: o.street, addressLocality: o.city, addressRegion: o.region, postalCode: o.postal, addressCountry: o.country };
+  }
+
+  function hoursSpec() {
+    var groups = {};
+    DAYS.forEach(function (d) {
+      var h = state.biz.hours[d[0]];
+      if (h && h.open && h.from && h.to) { var k = h.from + '-' + h.to; (groups[k] = groups[k] || []).push(d[0]); }
+    });
+    return Object.keys(groups).map(function (k) {
+      var p = k.split('-');
+      return { '@type': 'OpeningHoursSpecification', dayOfWeek: one(groups[k]), opens: p[0], closes: p[1] };
+    });
+  }
+
+  function siteGraph() {
+    var b = state.biz, id = bizId(), url = normUrl(b.url), graph = [];
+    var services = state.services.filter(function (s) { return (s.name || '').trim(); });
+    var people = state.people.filter(function (p) { return (p.name || '').trim(); });
+    var biz = {
+      '@type': b.type, '@id': id, name: b.name, url: url, description: b.description,
+      telephone: b.phone, email: b.email,
+      logo: b.logo ? { '@type': 'ImageObject', url: normUrl(b.logo) } : '',
+      image: b.image ? normUrl(b.image) : (b.logo ? normUrl(b.logo) : ''),
+      address: address({ street: b.hideStreet ? '' : b.street, city: b.city, region: b.region, postal: b.postal, country: b.country }),
+      areaServed: one(list(b.areaServed)),
+      openingHoursSpecification: hoursSpec(),
+      sameAs: lines(b.sameAs),
+      priceRange: b.type === 'Organization' ? '' : b.priceRange,
+      founder: people.filter(function (p) { return p.owner; }).map(function (p) { return { '@id': (base() || '') + '/#person-' + slug(p.name) }; }),
+      employee: people.filter(function (p) { return !p.owner; }).map(function (p) { return { '@id': (base() || '') + '/#person-' + slug(p.name) }; }),
+      hasOfferCatalog: services.length ? {
+        '@type': 'OfferCatalog', name: 'Services',
+        itemListElement: services.map(function (s) { return { '@type': 'Offer', itemOffered: { '@id': (base() || '') + '/#service-' + slug(s.name) } }; })
+      } : ''
+    };
+    if (b.type === 'Organization') delete biz.openingHoursSpecification;
+    graph.push(biz);
+    if (url) graph.push({ '@type': 'WebSite', '@id': base() + '/#website', url: url, name: b.name, publisher: { '@id': id } });
+    services.forEach(function (s) {
+      graph.push({ '@type': 'Service', '@id': (base() || '') + '/#service-' + slug(s.name), name: s.name, description: s.description,
+        provider: { '@id': id }, areaServed: one(list(s.area).length ? list(s.area) : list(b.areaServed)) });
+    });
+    people.forEach(function (p) {
+      graph.push({ '@type': 'Person', '@id': (base() || '') + '/#person-' + slug(p.name), name: p.name, jobTitle: p.jobTitle,
+        url: p.url ? normUrl(p.url) : '', image: p.image ? normUrl(p.image) : '', sameAs: lines(p.sameAs),
+        knowsAbout: list(p.knowsAbout),
+        hasCredential: list(p.credentials).map(function (c) { return { '@type': 'EducationalOccupationalCredential', name: c }; }),
+        worksFor: { '@id': id } });
+    });
+    return { '@context': 'https://schema.org', '@graph': graph };
+  }
+
+  function faqGraph() {
+    var faqs = state.faqs.filter(function (f) { return (f.q || '').trim() && (f.a || '').trim(); });
+    var page = normUrl(state.faqUrl);
+    return {
+      '@context': 'https://schema.org', '@type': 'FAQPage', '@id': page ? page.replace(/#.*$/, '') + '#faq' : '', url: page,
+      about: base() ? { '@id': bizId() } : '',
+      mainEntity: faqs.map(function (f) { return { '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }; })
+    };
+  }
+
+  function eventGraph() {
+    var evs = state.events.filter(function (e) { return (e.name || '').trim(); });
+    var modes = { inperson: 'OfflineEventAttendanceMode', online: 'OnlineEventAttendanceMode', mixed: 'MixedEventAttendanceMode' };
+    var graph = evs.map(function (e) {
+      var place = { '@type': 'Place', name: e.venue, address: address({ street: e.street, city: e.city, region: e.region, postal: e.postal, country: state.biz.country || 'US' }) };
+      var virt = { '@type': 'VirtualLocation', url: e.onlineUrl ? normUrl(e.onlineUrl) : '' };
+      var loc = e.mode === 'online' ? virt : e.mode === 'mixed' ? [place, virt] : place;
+      var price = e.free ? '0' : String(e.price || '').replace(/[^0-9.]/g, '');
+      return {
+        '@type': 'Event', name: e.name, description: e.description,
+        startDate: dateTime(e.start), endDate: dateTime(e.end),
+        eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/' + (modes[e.mode] || modes.inperson),
+        location: loc, image: e.image ? normUrl(e.image) : '', url: e.url ? normUrl(e.url) : '',
+        organizer: state.biz.name ? bizRef() : '',
+        offers: price ? { '@type': 'Offer', price: price, priceCurrency: 'USD', availability: 'https://schema.org/InStock', url: e.url ? normUrl(e.url) : '' } : ''
+      };
+    });
+    return { '@context': 'https://schema.org', '@graph': graph };
+  }
+
+  function toScript(obj) {
+    var c = clean(obj) || {};
+    return '<script type="application/ld+json">\n' + JSON.stringify(c, null, 2).replace(/</g, '\\u003c') + '\n<\/script>';
+  }
+
+  /* ---------- checks ---------- */
+  function siteIssues() {
+    var b = state.biz, out = [];
+    if (!b.name.trim()) out.push('Add your business name.');
+    if (!b.url.trim()) out.push('Add your website address.');
+    if (!b.description.trim()) out.push('Add a short description. AI answer engines use it to summarize your business.');
+    if (!b.phone.trim()) out.push('Add a phone number.');
+    if (!b.city.trim()) out.push('Add your city.');
+    if (!b.hideStreet && b.type !== 'Organization' && !b.street.trim()) out.push('Add your street address, or check the box if you serve customers at their location.');
+    if (!lines(b.sameAs).length) out.push('Add links to your Facebook, LinkedIn or Google Business Profile.');
+    if (!list(b.areaServed).length) out.push('Add the areas you serve.');
+    return out;
+  }
+  function faqIssues() {
+    var out = [], n = 0;
+    state.faqs.forEach(function (f, i) {
+      if ((f.q || '').trim() && (f.a || '').trim()) n++;
+      else if ((f.q || '').trim() || (f.a || '').trim()) out.push('Question ' + (i + 1) + ' needs both a question and an answer.');
+    });
+    if (n && !state.faqUrl.trim()) out.push('Add the address of the page where these FAQs appear.');
+    return out;
+  }
+  function eventIssues() {
+    var out = [];
+    state.events.forEach(function (e, i) {
+      var name = (e.name || '').trim() || 'Event ' + (i + 1);
+      if (!(e.name || '').trim()) out.push('Event ' + (i + 1) + ' needs a name.');
+      if (!e.start) out.push(name + ': add a start date and time.');
+      if (e.mode !== 'online' && !(e.city || '').trim() && !(e.street || '').trim()) out.push(name + ': add the address.');
+      if (e.mode !== 'inperson' && !(e.onlineUrl || '').trim()) out.push(name + ': add the online link.');
+      if (e.end && e.start && e.end < e.start) out.push(name + ': the end is before the start.');
+    });
+    return out;
+  }
+
+  /* ---------- output ---------- */
+  var blocks = [
+    { id: 'site', title: 'Business, services & people', where: 'Paste on your homepage. It can also go on every page.', build: siteGraph, issues: siteIssues, has: function () { return !!state.biz.name.trim() || !!state.biz.url.trim(); } },
+    { id: 'faq', title: 'FAQs', where: 'Paste only on the page where these questions and answers appear.', build: faqGraph, issues: faqIssues, has: function () { return state.faqs.some(function (f) { return (f.q || '').trim() && (f.a || '').trim(); }); } },
+    { id: 'events', title: 'Events', where: 'Paste on the page that lists these events.', build: eventGraph, issues: eventIssues, has: function () { return state.events.some(function (e) { return (e.name || '').trim(); }); } }
+  ];
+  var outBox = document.getElementById('outputs');
+  outBox.innerHTML = blocks.map(function (b) {
+    return '<div class="out" id="out-' + b.id + '"><div class="out-head"><div><h3>' + b.title + ' <span class="badge" id="badge-' + b.id + '"></span></h3><p class="out-where">' + b.where + '</p></div>' +
+      '<div class="toolbar"><button type="button" class="primary" data-copy="' + b.id + '">Copy code<span class="sr"> for ' + b.title + '</span></button></div></div>' +
+      '<ul class="issues" id="issues-' + b.id + '" hidden></ul><pre><code id="code-' + b.id + '"></code></pre>' +
+      '<p class="status" id="status-' + b.id + '" role="status" style="padding:0 1rem"></p></div>';
+  }).join('');
+
+  function update() {
+    blocks.forEach(function (b) {
+      var has = b.has(), issues = has ? b.issues() : [];
+      var badge = document.getElementById('badge-' + b.id), ul = document.getElementById('issues-' + b.id);
+      document.getElementById('code-' + b.id).textContent = has ? toScript(b.build()) : '(Fill in section ' + ({ site: '1', faq: '4', events: '5' })[b.id] + ' to create this code.)';
+      badge.className = 'badge ' + (!has ? 'off' : issues.length ? 'warn' : 'ok');
+      badge.textContent = !has ? 'Not started' : issues.length ? issues.length + ' to check' : 'Ready to paste';
+      ul.hidden = !issues.length;
+      ul.innerHTML = issues.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('');
+      document.querySelector('[data-copy="' + b.id + '"]').disabled = !has;
+    });
+    save();
+  }
+
+  outBox.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-copy]'); if (!btn) return;
+    var id = btn.getAttribute('data-copy'), text = document.getElementById('code-' + id).textContent, st = document.getElementById('status-' + id);
+    var done = function () { st.textContent = 'Copied. Paste it into your page as is.'; setTimeout(function () { st.textContent = ''; }, 4000); };
+    var fallback = function () {
+      var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (x) { st.textContent = 'Select the code and copy it with Ctrl+C.'; } ta.remove();
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+
+  /* ---------- example / clear ---------- */
+  document.getElementById('exampleBtn').addEventListener('click', function () {
+    if (!confirm('Replace what you have entered with an example business?')) return;
+    var s = blank();
+    Object.assign(s.biz, {
+      type: 'Bakery', name: 'Riverbend Bakery (example)', url: 'https://www.example.com',
+      description: 'Riverbend Bakery is a family-owned bakery in Dayton, Ohio, making scratch-baked breads, custom cakes and catering trays for local offices and events.',
+      phone: '937-555-0123', email: 'hello@example.com', logo: 'https://www.example.com/logo.png',
+      street: '123 Main St.', city: 'Dayton', region: 'OH', postal: '45402', country: 'US',
+      areaServed: 'Dayton, Kettering, Oakwood', priceRange: '$$',
+      sameAs: 'https://www.facebook.com/example\nhttps://www.instagram.com/example'
+    });
+    s.biz.hours.Saturday = { open: true, from: '08:00', to: '14:00' };
+    s.services = [
+      { id: uid(), name: 'Custom cakes', description: 'Made-to-order cakes for birthdays, weddings and celebrations.' },
+      { id: uid(), name: 'Office catering', description: 'Breakfast pastry and sandwich trays delivered in the Dayton area.' }
+    ];
+    s.people = [{ id: uid(), name: 'Jordan Rivera', jobTitle: 'Owner and Head Baker', owner: true, knowsAbout: 'artisan bread, cake decorating' }];
+    s.faqUrl = 'https://www.example.com/faq/';
+    s.faqs = [{ id: uid(), q: 'How far ahead should I order a custom cake?', a: 'Please order custom cakes at least one week ahead. Wedding cakes need four to six weeks.' }];
+    state = s; fillBusiness(); renderLists(); update();
+  });
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    if (!confirm('Clear everything you have entered?')) return;
+    state = blank(); fillBusiness(); renderLists(); update();
+  });
+
+  fillBusiness(); renderLists(); update();
+})();
 </script>
-
 </body>
 </html>
