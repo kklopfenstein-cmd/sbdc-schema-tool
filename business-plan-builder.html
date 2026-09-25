@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business Plan Builder – Miami Valley SBDC</title>
+<meta name="description" content="Free business plan builder from the Miami Valley Small Business Development Center. Build your plan step by step, with automatic financial statements, then print it, save it as a PDF or download it as a Word document.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#12355B; --navy-dark:#0A2340; --gold:#B3121F; --gold-bright:#D12A36; --gold-soft:#FF8A93;
+    --paper:#F4F7FA; --card:#FFFFFF; --border:#CFD9E4; --ink:#1C2430; --muted:#4A5667; --sky:#E6EEF6;
+    --olive:#3F6B4A; --olive-bg:#E9F0EA;
+    --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --sans: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --bmc-pink:#FBE1F2; --bmc-blue:#CDEFFB; --bmc-yellow:#FFFBBE; --bmc-green:#E3F0CE;
+    --swot-s:#E1F0D8; --swot-w:#FBE2E2; --swot-o:#DCEEFB; --swot-t:#FDEBD3;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--sans);}
+  body{min-height:100vh;}
+  .app{display:grid;grid-template-columns:270px 1fr;min-height:100vh;}
+  @media (max-width: 860px){ .app{grid-template-columns:1fr;} .rail{position:static;height:auto;order:2;} .main{order:1;} }
+
+  .rail{ background:var(--navy-dark); color:#EDEBE2; padding:28px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+  .rail-brand{padding:0 24px 20px 24px;border-bottom:1px solid rgba(255,255,255,0.12);margin-bottom:10px;}
+  .rail-brand .k{font-size:11px;letter-spacing:1.5px;color:var(--gold-soft);font-weight:700;text-transform:uppercase;}
+  .rail-brand h1{font-size:22px;margin:4px 0 2px 0;font-weight:800;letter-spacing:0.5px;}
+  .rail-brand p{margin:0;font-size:12px;color:#B9C3D6;}
+  .timeline{list-style:none;margin:14px 0;padding:0 10px;}
+  .timeline li{position:relative;}
+  .tl-btn{ all:unset;display:flex;gap:12px;align-items:flex-start;width:100%; padding:11px 12px;border-radius:8px;cursor:pointer; }
+  .tl-btn:hover{background:rgba(255,255,255,0.06);}
+  .tl-btn.active{background:rgba(255,255,255,0.12);}
+  .tl-btn:focus-visible{outline:3px solid var(--gold-soft);outline-offset:1px;}
+  .tl-node{ flex:0 0 auto;width:22px;height:22px;border-radius:50%; border:2px solid #6C7A93;background:var(--navy-dark);
+    display:flex;align-items:center;justify-content:center; font-size:11px;font-weight:700;color:#B9C3D6;margin-top:1px; }
+  .tl-btn.active .tl-node{border-color:var(--gold-soft);color:var(--gold-soft);}
+  .tl-node.done{background:var(--olive);border-color:var(--olive);color:#fff;}
+  .tl-connector{position:absolute;left:22px;top:33px;width:1px;height:calc(100% - 8px);background:rgba(255,255,255,0.16);}
+  .tl-text .date{display:block;font-size:10.5px;color:#9CA9C2;letter-spacing:0.5px;text-transform:uppercase;}
+  .tl-text .label{display:block;font-size:13.5px;font-weight:600;color:#EDEBE2;line-height:1.3;margin-top:2px;}
+  .tl-btn.active .tl-text .label{color:#fff;}
+  .rail-actions{padding:16px 22px 0 22px;margin-top:8px;border-top:1px solid rgba(255,255,255,0.12);}
+  .rail-actions button{width:100%;}
+  .rail-actions .btn-outline{background:transparent;color:#fff;border-color:rgba(255,255,255,0.45);} .rail-actions .btn-outline:hover{background:rgba(255,255,255,0.1);}
+  .rail-note{font-size:11.5px;color:#B9C3D6;line-height:1.5;padding:16px 22px 0 22px;margin:0;}
+  .rail-note a{color:#fff;}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+  .skip:focus{position:absolute;left:8px;top:8px;width:auto;height:auto;clip:auto;background:#fff;color:var(--navy);padding:8px 12px;z-index:10;font-weight:700;}
+  .cta{background:#fff;border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:6px;padding:14px 18px;margin:26px 0 0 0;font-size:14px;}
+  .cta a{color:var(--navy);font-weight:700;}
+
+  .main{padding:36px 44px 80px 44px;max-width:900px;min-width:0;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .table-scroll:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  @media (max-width:640px){ .dyn-table{min-width:560px;} .field label{flex-wrap:wrap;} }
+  @media (max-width:860px){.main{padding:24px 20px 60px 20px;}}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;gap:16px;flex-wrap:wrap;}
+  .save-indicator{font-size:12.5px;color:var(--olive);opacity:0;transition:opacity .4s;font-weight:600;}
+  .save-indicator.show{opacity:1;}
+
+  .btn{ font-family:var(--sans);font-size:13.5px;font-weight:600;border-radius:7px;border:1px solid transparent; padding:9px 16px;cursor:pointer;transition:.15s; }
+  .btn-primary{background:var(--navy);color:#fff;} .btn-primary:hover{background:var(--navy-dark);}
+  .btn-gold{background:var(--gold);color:#fff;} .btn-gold:hover{background:#8E0D18;}
+  .btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .btn-ghost{background:transparent;color:#EDEBE2;border-color:rgba(255,255,255,0.3);} .btn-ghost:hover{background:rgba(255,255,255,0.08);}
+  .btn-outline{background:#fff;color:var(--navy);border-color:var(--navy);} .btn-outline:hover{background:#EEF1F6;}
+  .btn-danger{color:#9C3B3B;border-color:#E0B9B9;} .btn-danger:hover{background:#FBEDED;}
+  .btn-sm{padding:5px 10px;font-size:12px;}
+
+  h2.section-title{font-size:26px;margin:0 0 2px 0;color:var(--navy);font-weight:800;}
+  .session-tag{font-size:13.5px;color:var(--muted);margin-bottom:22px;display:block;}
+  .callout{ background:var(--sky);border-left:4px solid var(--navy);padding:10px 14px;border-radius:4px;
+    font-size:13.5px;color:#1C2E45;margin-bottom:22px; }
+  .callout a{color:var(--navy);font-weight:700;}
+  .notice{ background:#EAF3FB;border-left:4px solid #2B6CB0;padding:12px 16px;border-radius:4px;
+    font-size:13.5px;color:#1a3a57;margin-bottom:22px; }
+  .notice strong{color:#123452;}
+  .notice a{color:#2B6CB0;font-weight:700;text-decoration:underline;}
+  .warning{ background:#FDF0E4;border-left:4px solid #C2680A;padding:12px 16px;border-radius:4px;
+    font-size:13.5px;color:#7a3d05;margin-bottom:22px; }
+  .warning strong{color:#5c2e04;}
+  .info-list{padding-left:22px;margin:0 0 18px 0;}
+  .info-list li{margin-bottom:8px;font-size:14.5px;line-height:1.55;}
+  .info-list li b{color:var(--navy);}
+
+  .field{margin-bottom:18px;}
+  .field label{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+  .field .hint{font-weight:400;color:var(--muted);font-style:italic;font-size:12.5px;}
+  input[type=text], textarea, select{ width:100%;font-family:var(--sans);font-size:14px;color:var(--ink);
+    border:1px solid var(--border);border-radius:7px;padding:10px 12px;background:#fff;resize:vertical; }
+  input[type=text]:focus, textarea:focus, select:focus{outline:3px solid var(--gold);outline-offset:1px;border-color:var(--navy);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media (max-width:640px){.row2,.row3{grid-template-columns:1fr;}}
+  h3.sub{font-size:17px;color:var(--navy);margin:32px 0 4px 0;border-bottom:3px solid var(--navy);display:inline-block;padding-bottom:3px;}
+
+  .dyn-table{width:100%;border-collapse:collapse;margin-top:12px;}
+  .dyn-table th{background:var(--navy);color:#fff;font-size:12.5px;text-align:left;padding:8px 10px;}
+  .dyn-table td{padding:6px;border-bottom:1px solid var(--border);vertical-align:top;}
+  .dyn-table input, .dyn-table textarea{font-size:13px;padding:7px 9px;}
+  .rm-row{background:transparent;border:none;color:#9C3B3B;cursor:pointer;font-size:16px;line-height:1;padding:4px 6px;}
+  .add-row-btn{margin-top:10px;}
+  .checklist-item{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14.5px;}
+  .checklist-item input{width:17px;height:17px;}
+  .calc-box{margin:4px 0 20px 0;}
+  .calc-placeholder{font-size:13px;color:var(--muted);font-style:italic;margin:0;}
+  .calc-result{background:var(--olive-bg);border:1px solid var(--olive);border-radius:8px;padding:12px 14px;font-size:14px;color:#20351f;}
+  .calc-result strong{color:var(--olive);}
+  .calc-warning{background:#FBEDED;border:1px solid #E0B9B9;border-radius:8px;padding:12px 14px;font-size:13.5px;color:#7a2020;}
+  .resume-row{border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:12px;background:#fff;}
+  .resume-row input[type=file]{padding:6px 8px;font-size:13px;}
+  .doc .resume-img-slot{margin:4px 0 14px 0;}
+  .nav-footer{display:flex;justify-content:space-between;margin-top:36px;padding-top:20px;border-top:1px solid var(--border);}
+
+  /* ---------- Business Model Canvas ---------- */
+  .bmc-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "partners activities value relationships segments"
+      "partners resources   value channels      segments"
+      "cost     cost        cost  revenue        revenue";
+    gap:10px;margin-top:14px;
+  }
+  @media (max-width:820px){
+    .bmc-grid{ grid-template-columns:1fr 1fr;
+      grid-template-areas:
+        "partners activities" "partners resources"
+        "value value" "relationships channels"
+        "segments segments" "cost revenue"; }
+  }
+  .bmc-cell{border-radius:8px;padding:10px 12px;}
+  .bmc-cell.c-pink{background:var(--bmc-pink);} .bmc-cell.c-blue{background:var(--bmc-blue);}
+  .bmc-cell.c-yellow{background:var(--bmc-yellow);} .bmc-cell.c-green{background:var(--bmc-green);}
+  .bmc-cell label{font-size:12px;margin-bottom:5px;}
+  .bmc-cell textarea{background:rgba(255,255,255,0.6);}
+
+  /* ---------- SWOT ---------- */
+  .swot-grid{ display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;
+    grid-template-areas:"strengths weaknesses" "opportunities threats"; gap:10px;margin-top:14px; }
+  @media (max-width:600px){.swot-grid{grid-template-columns:1fr;grid-template-areas:"strengths" "weaknesses" "opportunities" "threats";}}
+  .swot-cell{border-radius:8px;padding:10px 12px;}
+  .swot-cell.s{background:var(--swot-s);} .swot-cell.w{background:var(--swot-w);}
+  .swot-cell.o{background:var(--swot-o);} .swot-cell.t{background:var(--swot-t);}
+  .swot-cell textarea{background:rgba(255,255,255,0.6);}
+
+  /* ---------- Style picker ---------- */
+  .style-picker{ background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:22px; display:flex;gap:26px;flex-wrap:wrap; }
+  .style-picker .picker-group{flex:1;min-width:220px;}
+  .style-picker .picker-label{display:block;font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+  .style-picker .picker-desc{font-size:12px;color:var(--muted);margin-top:5px;font-style:italic;}
+  .section-toggle-list{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;}
+  .section-toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;}
+  .section-toggle input{width:15px;height:15px;flex:0 0 auto;}
+  .swatch-row{display:flex;gap:8px;}
+  .swatch{ flex:1;border:2px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;text-align:center;
+    font-size:12px;font-weight:600;color:var(--ink);background:#fff;transition:.15s;font-family:var(--sans); }
+  .swatch.active{border-color:var(--navy);background:var(--sky);color:var(--navy);}
+  .swatch:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .swatch .dot{width:16px;height:16px;border-radius:50%;margin:0 auto 5px auto;}
+
+  /* ---------- Preview / printable document ---------- */
+  .preview-wrap{background:#D5DEE8;padding:30px;border-radius:8px;}
+  @media (max-width:640px){.preview-wrap{padding:10px;} .doc{padding:28px 20px !important;}}
+  .doc{
+    --d-heading:#12355B; --d-accent:#B3121F; --d-font:Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --d-rule-top:3px solid var(--d-accent); --d-h2-border:2px solid var(--d-accent);
+    --d-table-head-bg:#12355B; --d-table-head-color:#fff; --d-check:#3F6B4A;
+    --d-title-transform:none; --d-h2-transform:none;
+    background:#fff;max-width:800px;margin:0 auto;padding:60px 64px;
+    font-family:var(--d-font);color:#222;box-shadow:0 4px 24px rgba(0,0,0,0.15);border-radius:2px;
+  }
+  .doc.theme-modern{ --d-heading:#1B3B3C; --d-accent:#0F8B8D; --d-font:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+    --d-table-head-bg:#0F8B8D; --d-check:#0F8B8D; --d-h2-transform:uppercase; }
+  .doc.theme-minimal{ --d-heading:#111111; --d-accent:#111111; --d-font:Georgia, 'Times New Roman', serif;
+    --d-table-head-bg:#ffffff; --d-table-head-color:#111111; --d-check:#111111;
+    --d-title-transform:uppercase; --d-h2-transform:uppercase; }
+  .doc h1.doc-title{font-size:34px;color:var(--d-heading);text-align:center;margin-bottom:2px;letter-spacing:1px;text-transform:var(--d-title-transform);}
+  .doc .doc-sub{text-align:center;color:var(--d-accent);font-style:italic;margin-bottom:6px;}
+  .doc.theme-modern .doc-sub{font-style:normal;font-weight:700;letter-spacing:2px;text-transform:uppercase;font-size:12px;}
+  .doc.theme-minimal .doc-sub{font-style:normal;letter-spacing:2px;font-size:12px;color:#555;}
+  .doc .doc-meta{text-align:center;font-size:13px;color:#555;margin-bottom:36px;font-family:var(--sans);}
+  .doc hr.gold{border:none;border-top:var(--d-rule-top);margin:0 0 30px 0;}
+  .doc.theme-minimal hr.gold{border-top:1px solid #111;}
+  .doc h2.doc-h2{font-size:21px;color:var(--d-heading);margin:34px 0 12px 0;text-transform:var(--d-h2-transform);letter-spacing:0.3px;border-bottom:var(--d-h2-border);padding-bottom:5px;}
+  .doc.theme-modern h2.doc-h2{border-bottom:none;border-left:5px solid var(--d-accent);padding:2px 0 2px 12px;font-size:17px;}
+  .doc.theme-minimal h2.doc-h2{border-bottom:1px solid #111;font-weight:400;font-size:16px;}
+  .doc h3.doc-h3{font-size:16px;color:var(--d-heading);margin:20px 0 6px 0;}
+  .doc.theme-modern h3.doc-h3{font-family:var(--sans);font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--d-accent);}
+  .doc.theme-minimal h3.doc-h3{font-style:italic;font-weight:400;color:#333;}
+  .doc p.doc-p{font-size:14.5px;line-height:1.65;margin:0 0 10px 0;white-space:pre-wrap;}
+  .doc .empty{color:#9a9585;font-style:italic;}
+  .doc table{width:100%;border-collapse:collapse;margin:10px 0 18px 0;font-size:13px;}
+  .doc table th{background:var(--d-table-head-bg);color:var(--d-table-head-color);padding:7px 9px;text-align:left;font-family:var(--sans);font-size:11.5px;}
+  .doc.theme-minimal table th{border-bottom:1.5px solid #111;}
+  .doc table td{padding:7px 9px;border-bottom:1px solid #ddd;}
+  .doc .bmc-doc{ display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:auto auto auto;
+    grid-template-areas:"partners activities value relationships segments" "partners resources value channels segments" "cost cost cost revenue revenue";
+    gap:1px;background:#ddd;border:1px solid #ddd;margin:12px 0 20px 0; }
+  .doc .bmc-doc > div{background:#fff;}
+  .doc .bmc-doc .hd{background:var(--d-table-head-bg);color:var(--d-table-head-color);font-family:var(--sans);font-weight:700;font-size:11px;padding:6px 8px;}
+  .doc .bmc-doc .bx-content{padding:8px;font-size:12px;flex:1;}
+  .doc.theme-minimal .bmc-doc .hd{border-bottom:1.5px solid #111;background:#fff;color:#111;}
+  .doc .swot-doc{ display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#ddd;border:1px solid #ddd;margin:12px 0 20px 0; }
+  .doc .swot-doc > div{background:#fff;padding:10px;font-size:12.5px;}
+  .doc .swot-doc .hd{background:var(--d-table-head-bg);color:var(--d-table-head-color);font-family:var(--sans);font-weight:700;font-size:11px;}
+  .doc.theme-minimal .swot-doc .hd{border-bottom:1.5px solid #111;background:#fff;color:#111;}
+  .doc .doc-check{font-size:14px;margin:4px 0;}
+  .doc .doc-check .box{display:inline-block;width:13px;height:13px;border:1.5px solid var(--d-heading);margin-right:8px;vertical-align:middle;position:relative;top:-1px;}
+  .doc .doc-toc{list-style:none;padding:0;margin:0 0 10px 0;}
+  .doc .doc-toc li{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dotted #ccc;font-size:14px;font-family:var(--sans);}
+  .doc .lean-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px;}
+  @media (max-width:600px){.doc .lean-grid{grid-template-columns:1fr;}}
+  .doc .lean-block{border:1px solid #e2ded0;border-radius:8px;padding:14px 16px;background:#fdfcf9;}
+  .doc.theme-modern .lean-block{border-color:#d7e9e9;background:#f5fbfb;border-radius:4px;}
+  .doc.theme-minimal .lean-block{border:none;border-bottom:1px solid #111;border-radius:0;background:#fff;padding:10px 0;}
+  .doc .lean-block h3.doc-h3{margin-top:0;}
+
+  /* ---------- Page numbers (structured formats only) ---------- */
+  .doc .doc-toc li .toc-page{font-family:var(--sans);color:var(--muted);font-size:12.5px;padding-left:10px;}
+
+  @page{ size: letter; margin-top:0.75in; margin-bottom:0.85in; margin-left:0.75in; margin-right:0.75in;
+    @bottom-center{ content: counter(page); font-family: sans-serif; font-size: 9pt; color:#666; }
+  }
+  @page appendixPage{ size: letter; margin-top:0.75in; margin-bottom:0.85in; margin-left:0.75in; margin-right:0.75in;
+    @bottom-center{ content: none; }
+  }
+
+  @media print{
+    .rail, .topbar, .nav-footer, .style-picker, .cta, .skip{display:none !important;}
+    .preview-wrap{background:#fff;padding:0;}
+    .doc{box-shadow:none;padding:0;max-width:100%;}
+    body{background:#fff;}
+    .app{display:block;}
+    .doc .doc-appendix-wrap{page-break-before:always;page:appendixPage;}
+    .doc h2.doc-h2{page-break-after:avoid;}
+    .doc table{page-break-inside:avoid;break-inside:avoid;}
+    .doc .bmc-doc{page-break-inside:avoid;break-inside:avoid;}
+    .doc .swot-doc{page-break-inside:avoid;break-inside:avoid;}
+    .doc .lean-block{page-break-inside:avoid;break-inside:avoid;}
+    .doc .doc-check{page-break-inside:avoid;break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<a class="sr skip" href="#main">Skip to the form</a>
+<div class="app">
+  <nav class="rail" id="rail" aria-label="Plan steps"></nav>
+  <main class="main" id="main" tabindex="-1"></main>
+</div>
+
+<script>
+/* ============ DATA MODEL ============ */
+const SECTIONS = [
+  {id:'instructions', date:'Start Here', label:'How to Use This Tool'},
+  {id:'business', date:'Setup', label:'Business Basics'},
+  {id:'s1', date:'Step 1', label:'Foundations'},
+  {id:'s2', date:'Step 2', label:'Customer & Market'},
+  {id:'s3', date:'Step 3', label:'Branding & Sales'},
+  {id:'s4', date:'Step 4', label:'Financials'},
+  {id:'s5', date:'Step 5', label:'Pricing'},
+  {id:'s6', date:'Step 6', label:'Operations'},
+  {id:'s7', date:'Step 7', label:'Finalize & Review'},
+  {id:'exec', date:'Step 8 — write last', label:'Executive Summary'},
+  {id:'preview', date:'Finish', label:'Preview & Print Plan'}
+];
+
+function defaultData(){
+  return {
+    business:{name:'',owner:'',structure:'',location:'',planDate:''},
+    settings:{format:'traditional', theme:'classic', excludedSections:[]},
+    s1:{mission:'',vision:'',vpSegment:'',vpProblem:'',vpProduct:'',vpBenefit:'',vpDiff:'',
+        bmc:{partners:'',activities:'',value:'',relationships:'',segments:'',resources:'',channels:'',costs:'',revenue:''}},
+    s2:{demo:'',needs:'',alt:'',size:'',tam:'',trends:'',
+        competitors:[{name:'',strengths:'',weaknesses:'',diff:''}],
+        swot:{strengths:'',weaknesses:'',opportunities:'',threats:''},
+        tools:''},
+    s3:{brandName:'',personality:'',tagline:'',colors:'',pitch:'',messages:'',
+        channels:'',process:'',goals:''},
+    s4:{startup:[{item:'',cost:'',type:''}],
+        revenueForecast:[{product:'',price:'',cogsPerUnit:'',unitsQ1:'',unitsQ2:'',unitsQ3:'',unitsQ4:''}],
+        income:[{item:'',type:'',q1:'',q2:'',q3:'',q4:''}],
+        cashflow:'',fixedCosts:'',variableCost:'',price:'',breakeven:'',startingCash:''},
+    s5:{laborCost:'',overhead:'',margin:'',svcPrice:'',marketRate:'',
+        productCosts:[{component:'',amount:''}],
+        cogs:'',markup:'',retailPrice:'',notes:''},
+    s6:{roles:[{role:'',resp:'',type:'',rate:'',hours:'',benefits:''}],
+        burdenRate:'11',
+        inventory:'',
+        funding:[{source:'',type:'',amount:'',rate:'',term:'',status:''}],
+        useOfFunds:[{category:'',amount:'',notes:''}]},
+    appendix:{resumes:[{id:uid(),label:'',fileName:'',mimeType:'',size:0}],
+              otherDocs:[{id:uid(),label:'',fileName:'',mimeType:'',size:0}]},
+    s7:{checklist:{exec:false,mvvp:false,bmc:false,customer:false,competitive:false,branding:false,
+                   financials:false,pricing:false,ops:false,reviewed:false},
+        demand:'',revenue:'',risks:'',capital:'',assessment:'',
+        actions:[{item:'',owner:'',date:''}]},
+    exec:{problem:'',products:'',fundingUse:'',highlight:'',longTermVision:''}
+  };
+}
+
+let data = defaultData();
+let currentSection = 'instructions';
+let saveTimer = null;
+const FIELD_META = {};
+const LOCAL_PREFIX = 'mvsbdc-plan-builder:';
+
+/* ============ STORAGE ============ */
+/* Saves only in this browser on this device (localStorage). Nothing is sent to the SBDC or anyone else.
+   Use Download a backup / Open a backup to move a plan between devices. */
+async function storageGet(key){
+  try{ return localStorage.getItem(LOCAL_PREFIX+key); }catch(e){ return null; }
+}
+async function storageSet(key, value){
+  try{ localStorage.setItem(LOCAL_PREFIX+key, value); return true; }catch(e){ return false; }
+}
+async function storageDelete(key){
+  try{ localStorage.removeItem(LOCAL_PREFIX+key); }catch(e){ /* ignore */ }
+}
+
+async function loadData(){
+  try{
+    const value = await storageGet('plan-data');
+    if(value){
+      const loaded = JSON.parse(value);
+      data = deepMerge(defaultData(), loaded);
+    }
+  }catch(e){ /* no saved data yet — use defaults */ }
+  renderAll();
+}
+function deepMerge(base, incoming){
+  if(Array.isArray(base)) return Array.isArray(incoming) ? incoming : base;
+  if(typeof base === 'object' && base !== null){
+    const out = {...base};
+    for(const k in base){ out[k] = deepMerge(base[k], incoming ? incoming[k] : undefined); }
+    return out;
+  }
+  return incoming !== undefined ? incoming : base;
+}
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    const ok = await storageSet('plan-data', JSON.stringify(data));
+    if(ok) flashSaved(); else showSaveProblem();
+  }, 700);
+}
+function showSaveProblem(){
+  const el = document.getElementById('saveIndicator');
+  if(!el) return;
+  el.textContent = '⚠ Couldn\'t save in this browser — click "Download a backup" to keep your work';
+  el.style.color = '#9C3B3B';
+  el.classList.add('show');
+}
+function flashExported(){
+  const el = document.getElementById('saveIndicator');
+  if(!el) return;
+  el.textContent = '✓ Backup downloaded';
+  el.style.color = '';
+  el.classList.add('show');
+  clearTimeout(flashExported._t);
+  flashExported._t = setTimeout(()=>{ el.classList.remove('show'); }, 2500);
+}
+function flashSaved(){
+  const el = document.getElementById('saveIndicator');
+  if(!el) return;
+  el.textContent = '✓ Saved in this browser'; el.style.color = '';
+  el.classList.add('show');
+  clearTimeout(flashSaved._t);
+  flashSaved._t = setTimeout(()=>el.classList.remove('show'), 1600);
+}
+
+/* ============ HELPERS ============ */
+function esc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function val(v){ return v && v.trim() !== '' ? esc(v) : null; }
+function setPath(obj, path, value){
+  const keys = path.split('.'); let o = obj;
+  for(let i=0;i<keys.length-1;i++){ o = o[keys[i]]; }
+  o[keys[keys.length-1]] = value;
+}
+function getPath(obj, path){ return path.split('.').reduce((o,k)=>o&&o[k], obj); }
+function fldId(path){ return 'fld-' + path.replace(/\./g,'-'); }
+function uid(){ return 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function humanSize(bytes){
+  if(!bytes) return '0 KB';
+  if(bytes < 1024*1024) return Math.round(bytes/1024)+' KB';
+  return (bytes/1024/1024).toFixed(1)+' MB';
+}
+
+/* ---- Break-even calculator ---- */
+function parseNum(v){
+  if(v === null || v === undefined) return NaN;
+  const cleaned = v.toString().replace(/[^0-9.\-]/g,'');
+  return cleaned === '' || cleaned === '-' ? NaN : parseFloat(cleaned);
+}
+function calcBreakEven(){
+  const box = document.getElementById('breakEvenCalc');
+  if(!box) return;
+  const fixed = parseNum(data.s4.fixedCosts);
+  const varCost = parseNum(data.s4.variableCost);
+  const price = parseNum(data.s4.price);
+
+  if(isNaN(fixed) || isNaN(varCost) || isNaN(price)){
+    box.innerHTML = `<p class="calc-placeholder">Enter fixed costs, variable cost, and price above and this will calculate your break-even point automatically.</p>`;
+    return;
+  }
+  const margin = price - varCost;
+  if(margin <= 0){
+    box.innerHTML = `<div class="calc-warning">Your price ($${price.toFixed(2)}) isn't higher than your variable cost per unit ($${varCost.toFixed(2)}) — at these numbers you can't break even no matter how many units you sell. Try raising your price or lowering your variable cost.</div>`;
+    return;
+  }
+  const units = fixed / margin;
+  const unitsRounded = Math.ceil(units);
+  const revenue = unitsRounded * price;
+  const summary = unitsRounded.toLocaleString()+' units per month (about $'+revenue.toLocaleString(undefined,{maximumFractionDigits:0})+' in monthly revenue)';
+  box.innerHTML = `<div class="calc-result">
+    <strong>Calculated break-even:</strong> ${esc(summary)}
+    <div style="margin-top:8px;"><button type="button" class="btn btn-outline btn-sm" onclick="useCalculatedBreakEven()">Use this number</button></div>
+  </div>`;
+  box.dataset.calculated = summary;
+}
+function useCalculatedBreakEven(){
+  const box = document.getElementById('breakEvenCalc');
+  const summary = box && box.dataset.calculated;
+  if(!summary) return;
+  setPath(data, 's4.breakeven', summary);
+  scheduleSave();
+  updateNode('s4');
+  const el = document.getElementById(fldId('s4.breakeven'));
+  if(el) el.value = summary;
+}
+
+/* ============ FINANCIAL STATEMENT ENGINE (computed from raw data, shown in Appendix) ============ */
+function fmtMoney(n){
+  if(n === null || n === undefined || isNaN(n)) return '—';
+  const neg = n < 0;
+  const str = '$'+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:0});
+  return neg ? '('+str+')' : str;
+}
+function sumField(rows, key){
+  return (rows||[]).reduce((total,r)=>{ const n = parseNum(r[key]); return isNaN(n) ? total : total+n; }, 0);
+}
+function computeIncomeStatement(){
+  const rows = data.s4.income || [];
+  const quarters = ['q1','q2','q3','q4'];
+  const revenueOther=[0,0,0,0], cogsOther=[0,0,0,0], opexOther=[0,0,0,0];
+  rows.forEach(r=>{
+    const bucket = r.type === 'Revenue' ? revenueOther : r.type === 'Cost of Goods Sold' ? cogsOther : r.type === 'Operating Expense' ? opexOther : null;
+    if(!bucket) return;
+    quarters.forEach((q,idx)=>{ const n = parseNum(r[q]); if(!isNaN(n)) bucket[idx]+=n; });
+  });
+  const rf = computeRevenueForecast();
+  const revenueProduct = rf.quarterlyRevenue;
+  const cogsProduct = rf.quarterlyCogs;
+  const revenue = revenueOther.map((v,idx)=> v + revenueProduct[idx]);
+  const cogs = cogsOther.map((v,idx)=> v + cogsProduct[idx]);
+  const payroll = computePayrollCost();
+  const opexPayrollGross = payroll.quarterlyGross;
+  const opexPayrollBurden = payroll.quarterlyBurden;
+  const opexPayrollBenefits = payroll.quarterlyBenefits;
+  const opexPayroll = payroll.quarterly;
+  const opex = opexOther.map((v,idx)=> v + opexPayroll[idx]);
+  const grossProfit = revenue.map((v,idx)=> v - cogs[idx]);
+  const netIncome = grossProfit.map((v,idx)=> v - opex[idx]);
+  const total = arr => arr.reduce((a,b)=>a+b,0);
+  return { revenue, revenueProduct, revenueOther, cogs, cogsProduct, cogsOther, grossProfit,
+    opexOther, opexPayrollGross, opexPayrollBurden, opexPayrollBenefits, opexPayroll, opex, netIncome,
+    totals:{ revenue:total(revenue), revenueProduct:total(revenueProduct), revenueOther:total(revenueOther),
+      cogs:total(cogs), cogsProduct:total(cogsProduct), cogsOther:total(cogsOther), grossProfit:total(grossProfit),
+      opexOther:total(opexOther), opexPayrollGross:total(opexPayrollGross), opexPayrollBurden:total(opexPayrollBurden),
+      opexPayrollBenefits:total(opexPayrollBenefits), opexPayroll:total(opexPayroll), opex:total(opex), netIncome:total(netIncome) } };
+}
+function hasCategorizedIncome(){ return (data.s4.income||[]).some(r=>r.type); }
+function computeFundingTotals(){
+  let loan=0, equity=0;
+  (data.s6.funding||[]).forEach(f=>{
+    const n = parseNum(f.amount);
+    if(isNaN(n)) return;
+    if(f.type === 'Loan / Debt') loan += n;
+    else if(f.type === 'Equity / Investment' || f.type === 'Grant (no repayment)') equity += n;
+  });
+  return { loan, equity, total: loan+equity };
+}
+function computeStartupTotal(){ return sumField(data.s4.startup, 'cost'); }
+
+/* ---- Staffing / payroll ---- */
+function computePayrollCost(){
+  const burdenPctRaw = parseNum(data.s6.burdenRate);
+  const burdenPct = isNaN(burdenPctRaw) ? 11 : burdenPctRaw;
+  const burdenMultiplier = 1 + (burdenPct/100);
+  let monthlyGross = 0, monthlyBurdened = 0, monthlyBenefits = 0;
+  (data.s6.roles||[]).forEach(r=>{
+    const benefits = parseNum(r.benefits);
+    if(!isNaN(benefits)) monthlyBenefits += benefits;
+    const rate = parseNum(r.rate);
+    const hours = parseNum(r.hours);
+    if(isNaN(rate) || isNaN(hours)) return;
+    const gross = rate*hours;
+    monthlyGross += gross;
+    monthlyBurdened += (r.type === 'Contract') ? gross : gross*burdenMultiplier;
+  });
+  const monthlyBurdenAmount = monthlyBurdened - monthlyGross;
+  const monthlyTotal = monthlyBurdened + monthlyBenefits;
+  const quarterlyGross = monthlyGross*3;
+  const quarterlyBurden = monthlyBurdenAmount*3;
+  const quarterlyBenefits = monthlyBenefits*3;
+  const quarterlyAmount = monthlyTotal*3;
+  return {
+    monthlyGross, monthlyBurdened, monthlyBurdenAmount, monthlyBenefits, monthlyTotal, burdenPct,
+    quarterlyGross: [quarterlyGross, quarterlyGross, quarterlyGross, quarterlyGross],
+    quarterlyBurden: [quarterlyBurden, quarterlyBurden, quarterlyBurden, quarterlyBurden],
+    quarterlyBenefits: [quarterlyBenefits, quarterlyBenefits, quarterlyBenefits, quarterlyBenefits],
+    quarterly: [quarterlyAmount, quarterlyAmount, quarterlyAmount, quarterlyAmount],
+    annual: monthlyTotal*12
+  };
+}
+function calcPayroll(){
+  const box = document.getElementById('payrollCalc');
+  if(!box) return;
+  const p = computePayrollCost();
+  if(p.monthlyGross <= 0 && p.monthlyBenefits <= 0){
+    box.innerHTML = `<p class="calc-placeholder">Add an hourly rate and hours/month (and benefits, if offered) for each role above to calculate your total staffing cost automatically.</p>`;
+    return;
+  }
+  const benefitsLine = p.monthlyBenefits > 0 ? `, plus ${fmtMoney(p.monthlyBenefits)}/month in benefits` : '';
+  box.innerHTML = `<div class="calc-result">
+    <strong>Estimated staffing cost:</strong> ${fmtMoney(p.monthlyGross)}/month in gross wages, plus ${fmtMoney(p.monthlyBurdenAmount)}/month in payroll burden (${p.burdenPct}%)${benefitsLine} = <strong>${fmtMoney(p.monthlyTotal)}/month</strong> total (about ${fmtMoney(p.annual)}/year). This is automatically included as an Operating Expense in your Appendix projections.
+  </div>`;
+}
+
+/* ---- Revenue forecast by product line ---- */
+function computeRevenueForecast(){
+  const rows = data.s4.revenueForecast || [];
+  const qKeys = ['unitsQ1','unitsQ2','unitsQ3','unitsQ4'];
+  const quarterlyRevenue = [0,0,0,0], quarterlyCogs = [0,0,0,0];
+  const lines = rows.map(r=>{
+    const price = parseNum(r.price);
+    const cogs = parseNum(r.cogsPerUnit);
+    const hasPrice = !isNaN(price), hasCogs = !isNaN(cogs);
+    const margin = (hasPrice && hasCogs) ? price - cogs : null;
+    const unitsByQ = qKeys.map(k => parseNum(r[k]));
+    const revenueByQ = unitsByQ.map(u => (hasPrice && !isNaN(u)) ? price*u : 0);
+    const cogsByQ = unitsByQ.map(u => (hasCogs && !isNaN(u)) ? cogs*u : 0);
+    revenueByQ.forEach((v,idx)=> quarterlyRevenue[idx]+=v);
+    cogsByQ.forEach((v,idx)=> quarterlyCogs[idx]+=v);
+    const totalUnits = unitsByQ.reduce((a,b)=> a+(isNaN(b)?0:b), 0);
+    const lineRevenueTotal = revenueByQ.reduce((a,b)=>a+b,0);
+    const lineCogsTotal = cogsByQ.reduce((a,b)=>a+b,0);
+    return { product:r.product, price, cogs, margin, unitsByQ, totalUnits, revenueByQ, cogsByQ, lineRevenueTotal, lineCogsTotal };
+  });
+  const annualRevenue = quarterlyRevenue.reduce((a,b)=>a+b,0);
+  const annualCogs = quarterlyCogs.reduce((a,b)=>a+b,0);
+  return { lines, quarterlyRevenue, quarterlyCogs, annualRevenue, annualCogs, annualMargin: annualRevenue-annualCogs };
+}
+function calcRevenueForecast(){
+  const box = document.getElementById('revenueForecastCalc');
+  if(!box) return;
+  const rf = computeRevenueForecast();
+  const validLines = rf.lines.filter(l=> l.margin!==null);
+  if(!validLines.length){
+    box.innerHTML = `<p class="calc-placeholder">Add a sales price and COGS per unit for each product line to calculate margin automatically.</p>`;
+    return;
+  }
+  let html = '';
+  validLines.forEach(l=>{
+    const qParts = l.unitsByQ.map((u,idx)=> isNaN(u) ? null : `Q${idx+1}: ${u}`).filter(Boolean).join(', ');
+    const detail = l.totalUnits>0
+      ? ` — ${l.totalUnits} units/year (${qParts}) = ${fmtMoney(l.lineRevenueTotal - l.lineCogsTotal)} gross margin for the year`
+      : ' — add units per quarter to project totals';
+    html += `<div style="margin-bottom:6px;"><strong>${esc(l.product||'Product')}:</strong> ${fmtMoney(l.margin)} margin per unit${detail}</div>`;
+  });
+  const qMargins = rf.quarterlyRevenue.map((v,idx)=> v - rf.quarterlyCogs[idx]);
+  html += `<div style="margin-top:8px;padding-top:8px;border-top:1px solid #cfcabb;"><strong>Gross margin by quarter:</strong> Q1 ${fmtMoney(qMargins[0])} &middot; Q2 ${fmtMoney(qMargins[1])} &middot; Q3 ${fmtMoney(qMargins[2])} &middot; Q4 ${fmtMoney(qMargins[3])} (about ${fmtMoney(rf.annualRevenue)}/year in revenue). This is automatically included in your Appendix projections.</div>`;
+  box.innerHTML = `<div class="calc-result">${html}</div>`;
+}
+
+/* ---- Loan amortization ---- */
+function amortizeLoan(principal, annualRatePct, termMonths){
+  const n = Math.round(termMonths);
+  if(!n || n<=0 || isNaN(principal)) return null;
+  const r = (parseNum(annualRatePct)||0)/100/12;
+  let payment;
+  if(!r){ payment = principal/n; }
+  else { payment = principal*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1); }
+  let balance = principal;
+  const monthlyPayments = [];
+  const monthsToSim = Math.min(12,n);
+  for(let m=0;m<monthsToSim;m++){
+    const interestPortion = r ? balance*r : 0;
+    let principalPortion = payment - interestPortion;
+    let actualPayment = payment;
+    if(principalPortion > balance){ principalPortion = balance; actualPayment = principalPortion + interestPortion; }
+    balance -= principalPortion;
+    monthlyPayments.push({payment:actualPayment, interest:interestPortion, principal:principalPortion});
+    if(balance <= 0.005){ balance = 0; break; }
+  }
+  const interestPaidY1 = monthlyPayments.reduce((s,p)=>s+p.interest,0);
+  const principalPaidY1 = monthlyPayments.reduce((s,p)=>s+p.principal,0);
+  return { payment, monthlyPayments, interestPaidY1, principalPaidY1, remainingBalance: Math.max(0,balance) };
+}
+function computeLoanSchedules(){
+  return (data.s6.funding||[]).filter(f=>f.type==='Loan / Debt').map(f=>{
+    const principal = parseNum(f.amount);
+    if(isNaN(principal)) return null;
+    const rate = parseNum(f.rate);
+    const term = parseNum(f.term);
+    if(isNaN(rate) || isNaN(term) || term<=0){
+      return { source:f.source, principal, amortized:false, remainingBalance:principal,
+        interestPaidY1:0, principalPaidY1:0, monthlyPayments:[], payment:null };
+    }
+    const amort = amortizeLoan(principal, rate, term);
+    if(!amort) return { source:f.source, principal, amortized:false, remainingBalance:principal,
+      interestPaidY1:0, principalPaidY1:0, monthlyPayments:[], payment:null };
+    return { source:f.source, principal, rate, term, amortized:true, ...amort };
+  }).filter(Boolean);
+}
+function computeQuarterlyLoanPayments(){
+  const totals = [0,0,0,0];
+  computeLoanSchedules().forEach(s=>{
+    (s.monthlyPayments||[]).forEach((mp, monthIdx)=>{
+      const q = Math.floor(monthIdx/3);
+      if(q>=0 && q<4) totals[q]+=mp.payment;
+    });
+  });
+  return totals;
+}
+function computeLoanTotals(){
+  const schedules = computeLoanSchedules();
+  return {
+    interest: schedules.reduce((s,x)=>s+x.interestPaidY1,0),
+    principal: schedules.reduce((s,x)=>s+x.principalPaidY1,0),
+    remaining: schedules.reduce((s,x)=>s+x.remainingBalance,0)
+  };
+}
+function calcLoanSchedules(){
+  const box = document.getElementById('loanCalc');
+  if(!box) return;
+  const schedules = computeLoanSchedules();
+  if(!schedules.length){
+    box.innerHTML = `<p class="calc-placeholder">Mark a funding source as "Loan / Debt" and add an amount, interest rate, and term to see an estimated monthly payment here.</p>`;
+    return;
+  }
+  let html = '';
+  schedules.forEach(s=>{
+    const label = esc(s.source || 'Loan');
+    if(!s.amortized){
+      html += `<div style="margin-bottom:8px;"><strong>${label}:</strong> add an interest rate and term above to calculate a monthly payment.</div>`;
+    } else {
+      html += `<div style="margin-bottom:8px;"><strong>${label}:</strong> about ${fmtMoney(s.payment)}/month for ${s.term} months at ${s.rate}% APR (roughly ${fmtMoney(s.interestPaidY1)} in interest over Year 1).</div>`;
+    }
+  });
+  box.innerHTML = `<div class="calc-result">${html}</div>`;
+}
+
+function computeCashFlow(){
+  const inc = computeIncomeStatement();
+  const funding = computeFundingTotals();
+  const startupTotal = computeStartupTotal();
+  const startingCash = parseNum(data.s4.startingCash) || 0;
+  const loanPayments = computeQuarterlyLoanPayments();
+  let beginning = startingCash;
+  return [0,1,2,3].map(idx=>{
+    const operating = inc.netIncome[idx] || 0;
+    const investing = idx===0 ? -startupTotal : 0;
+    const financing = (idx===0 ? funding.total : 0) - loanPayments[idx];
+    const netChange = operating + investing + financing;
+    const ending = beginning + netChange;
+    const row = { beginning, operating, investing, financing, netChange, ending };
+    beginning = ending;
+    return row;
+  });
+}
+function computeBalanceSheet(){
+  const cashFlow = computeCashFlow();
+  const endingCash = cashFlow[3].ending;
+  const startupTotal = computeStartupTotal();
+  const funding = computeFundingTotals();
+  const inc = computeIncomeStatement();
+  const startingCash = parseNum(data.s4.startingCash) || 0;
+  const loanTotals = computeLoanTotals();
+  const totalAssets = endingCash + startupTotal;
+  const totalLiabilities = loanTotals.remaining;
+  const retainedEarnings = inc.totals.netIncome - loanTotals.interest;
+  const totalEquity = startingCash + funding.equity + retainedEarnings;
+  return {
+    cash: endingCash, assets: startupTotal, totalAssets,
+    loans: totalLiabilities, totalLiabilities,
+    ownerEquity: startingCash, investorEquity: funding.equity, retainedEarnings, totalEquity,
+    totalLiabEquity: totalLiabilities + totalEquity
+  };
+}
+function hasAnyFinancialData(){
+  const payroll = computePayrollCost();
+  const rf = computeRevenueForecast();
+  return computeStartupTotal()>0 || computeFundingTotals().total>0 || (parseNum(data.s4.startingCash)||0)>0 || hasCategorizedIncome() || payroll.monthlyGross>0 || payroll.monthlyBenefits>0 || rf.annualRevenue>0 || rf.annualCogs>0;
+}
+
+function genComputedIncomeStatementDoc(){
+  const payroll = computePayrollCost();
+  const rf = computeRevenueForecast();
+  if(!hasCategorizedIncome() && payroll.monthlyGross<=0 && payroll.monthlyBenefits<=0 && rf.annualRevenue<=0 && rf.annualCogs<=0){
+    return '';
+  }
+  const inc = computeIncomeStatement();
+  const cols = ['Q1','Q2','Q3','Q4','Full Year'];
+  const row = (label, arr, total, bold) => {
+    const cells = [...arr, total].map(v=>`<td>${fmtMoney(v)}</td>`).join('');
+    return `<tr${bold?' style="font-weight:700;border-top:2px solid #999;"':''}><td>${esc(label)}</td>${cells}</tr>`;
+  };
+  return `<table>
+    <thead><tr><th>Line</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>
+      ${row('Revenue (Product Lines)', inc.revenueProduct, inc.totals.revenueProduct)}
+      ${row('Revenue (Other)', inc.revenueOther, inc.totals.revenueOther)}
+      ${row('Total Revenue', inc.revenue, inc.totals.revenue, true)}
+      ${row('COGS (Product Lines)', inc.cogsProduct, inc.totals.cogsProduct)}
+      ${row('COGS (Other)', inc.cogsOther, inc.totals.cogsOther)}
+      ${row('Total COGS', inc.cogs, inc.totals.cogs, true)}
+      ${row('Gross Profit', inc.grossProfit, inc.totals.grossProfit, true)}
+      ${row('Other Operating Expenses', inc.opexOther, inc.totals.opexOther)}
+      ${row('Payroll (Gross Wages)', inc.opexPayrollGross, inc.totals.opexPayrollGross)}
+      ${row('Payroll Burden', inc.opexPayrollBurden, inc.totals.opexPayrollBurden)}
+      ${row('Employee Benefits', inc.opexPayrollBenefits, inc.totals.opexPayrollBenefits)}
+      ${row('Total Operating Expenses', inc.opex, inc.totals.opex, true)}
+      ${row('Net Income', inc.netIncome, inc.totals.netIncome, true)}
+    </tbody>
+  </table>`;
+}
+function genComputedCashFlowDoc(){
+  if(!hasAnyFinancialData()){
+    return '';
+  }
+  const rows = computeCashFlow();
+  const cols = ['Q1','Q2','Q3','Q4'];
+  const row = (label, key, bold) => {
+    const cells = rows.map(r=>`<td>${fmtMoney(r[key])}</td>`).join('');
+    return `<tr${bold?' style="font-weight:700;border-top:2px solid #999;"':''}><td>${esc(label)}</td>${cells}</tr>`;
+  };
+  return `<table>
+    <thead><tr><th>Line</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>
+      ${row('Beginning Cash','beginning')}
+      ${row('Cash from Operating Activities','operating')}
+      ${row('Cash from Investing Activities','investing')}
+      ${row('Cash from Financing Activities','financing')}
+      ${row('Net Change in Cash','netChange',true)}
+      ${row('Ending Cash','ending',true)}
+    </tbody>
+  </table>`;
+}
+function genComputedBalanceSheetDoc(){
+  if(!hasAnyFinancialData()){
+    return '';
+  }
+  const bs = computeBalanceSheet();
+  const balanced = Math.abs(bs.totalAssets - bs.totalLiabEquity) < 1;
+  return `<table><thead><tr><th>Assets</th><th></th></tr></thead><tbody>
+      <tr><td>Cash</td><td>${fmtMoney(bs.cash)}</td></tr>
+      <tr><td>Equipment &amp; Startup Assets</td><td>${fmtMoney(bs.assets)}</td></tr>
+      <tr style="font-weight:700;border-top:2px solid #999;"><td>Total Assets</td><td>${fmtMoney(bs.totalAssets)}</td></tr>
+    </tbody></table>
+    <table><thead><tr><th>Liabilities</th><th></th></tr></thead><tbody>
+      <tr><td>Loans Payable</td><td>${fmtMoney(bs.loans)}</td></tr>
+      <tr style="font-weight:700;border-top:2px solid #999;"><td>Total Liabilities</td><td>${fmtMoney(bs.totalLiabilities)}</td></tr>
+    </tbody></table>
+    <table><thead><tr><th>Equity</th><th></th></tr></thead><tbody>
+      <tr><td>Owner's Initial Investment</td><td>${fmtMoney(bs.ownerEquity)}</td></tr>
+      <tr><td>Investor Equity &amp; Grants</td><td>${fmtMoney(bs.investorEquity)}</td></tr>
+      <tr><td>Retained Earnings (Year 1 Net Income, less loan interest)</td><td>${fmtMoney(bs.retainedEarnings)}</td></tr>
+      <tr style="font-weight:700;border-top:2px solid #999;"><td>Total Equity</td><td>${fmtMoney(bs.totalEquity)}</td></tr>
+      <tr style="font-weight:700;border-top:3px double #999;"><td>Total Liabilities &amp; Equity</td><td>${fmtMoney(bs.totalLiabEquity)}</td></tr>
+    </tbody></table>
+    <p class="doc-p" style="font-size:12.5px;color:${balanced?'#3F6B4A':'#9C3B3B'};">${balanced ? '✓ Balanced — total assets match total liabilities &amp; equity.' : "Note: totals don't line up exactly, which is expected while the data above is still incomplete."}</p>`;
+}
+
+/* ---- Resume/bio file storage (stored separately from main data to keep autosave small) ---- */
+async function saveResumeFile(id, dataUrl){
+  return await storageSet('resume-file:'+id, dataUrl);
+}
+async function loadResumeFile(id){
+  return await storageGet('resume-file:'+id);
+}
+async function deleteResumeFile(id){
+  await storageDelete('resume-file:'+id);
+}
+
+/* ---- Other supporting document file storage ---- */
+async function saveDocFile(id, dataUrl){
+  return await storageSet('doc-file:'+id, dataUrl);
+}
+async function loadDocFile(id){
+  return await storageGet('doc-file:'+id);
+}
+async function deleteDocFile(id){
+  await storageDelete('doc-file:'+id);
+}
+
+function isComplete(id){
+  const d = data[id];
+  if(!d) return false;
+  function anyFilled(obj){
+    if(Array.isArray(obj)) return obj.some(anyFilled);
+    if(typeof obj === 'object' && obj !== null) return Object.values(obj).some(anyFilled);
+    if(typeof obj === 'boolean') return obj;
+    return obj && obj.toString().trim() !== '';
+  }
+  return anyFilled(d);
+}
+
+/* ============ RAIL ============ */
+function renderRail(){
+  const rail = document.getElementById('rail');
+  let html = `<div class="rail-brand"><span class="k">Miami Valley SBDC</span><h1>Business Plan Builder</h1><p>A free tool for starting or growing a business</p></div><ul class="timeline">`;
+  SECTIONS.forEach((s, i)=>{
+    const active = s.id === currentSection ? 'active' : '';
+    const current = s.id === currentSection ? ' aria-current="step"' : '';
+    const done = s.id !== 'preview' && isComplete(s.id) ? 'done' : '';
+    const isLast = i === SECTIONS.length - 1;
+    html += `<li><button class="tl-btn ${active}"${current} onclick="goTo('${s.id}')">
+        <span class="tl-node ${done}">${done ? '&#10003;' : (i+1)}</span>
+        <span class="tl-text"><span class="date">${s.date}</span><span class="label">${s.label}</span></span>
+      </button>${!isLast ? '<div class="tl-connector"></div>' : ''}</li>`;
+  });
+  html += `</ul><div class="rail-actions">
+    <button class="btn btn-gold" style="width:100%;margin-bottom:8px;" onclick="goTo('preview')">Preview Plan</button>
+    <button class="btn btn-outline" style="width:100%;margin-bottom:8px;" onclick="exportPlanData()">Download a backup</button>
+    <button class="btn btn-outline" style="width:100%;margin-bottom:8px;" onclick="triggerImport()">Open a backup</button>
+    <input type="file" id="importFileInput" accept=".json,application/json" style="display:none;" aria-hidden="true" tabindex="-1" onchange="handleImportFile(this)">
+    <button class="btn btn-ghost" style="width:100%;" onclick="resetAll()">Reset All Data</button></div>
+    <p class="rail-note">From the <a href="https://sbdcec.com/">Miami Valley Small Business Development Center</a>. Want help with your plan? <a href="https://clients.ohiosbdc.ohio.gov/reg.aspx?mode=counsel&amp;center=17047&amp;subloc=0">Request free advising</a> or call <a href="tel:+19372109460">937-210-9460</a>.</p>`;
+  rail.innerHTML = html;
+}
+function goTo(id){ currentSection = id; renderAll(); window.scrollTo(0,0); const m=document.getElementById('main'); if(m) m.focus({preventScroll:true}); }
+function resetAll(){
+  if(confirm('This clears everything you have entered in this builder. Continue?')){
+    (data.appendix && data.appendix.resumes || []).forEach(r=>deleteResumeFile(r.id));
+    (data.appendix && data.appendix.otherDocs || []).forEach(r=>deleteDocFile(r.id));
+    data = defaultData(); scheduleSave(); renderAll();
+  }
+}
+
+/* ---- Export / Import backup ---- */
+async function exportPlanData(){
+  const resumeFiles = {};
+  for(const r of (data.appendix && data.appendix.resumes || [])){
+    if(r.fileName){
+      const du = await loadResumeFile(r.id);
+      if(du) resumeFiles[r.id] = du;
+    }
+  }
+  const docFiles = {};
+  for(const r of (data.appendix && data.appendix.otherDocs || [])){
+    if(r.fileName){
+      const du = await loadDocFile(r.id);
+      if(du) docFiles[r.id] = du;
+    }
+  }
+  const bundle = { exportedAt: new Date().toISOString(), tool: 'mvsbdc-business-plan-builder', planData: data, resumeFiles, docFiles };
+  const json = JSON.stringify(bundle, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const nameSafe = (data.business.name || 'my-business-plan').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-+|-+$)/g,'') || 'draft';
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'business-plan-backup-'+nameSafe+'.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  flashExported();
+}
+function triggerImport(){ document.getElementById('importFileInput').click(); }
+function handleImportFile(inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    try{
+      const bundle = JSON.parse(e.target.result);
+      if(!bundle || !bundle.planData) throw new Error('not a valid export file');
+      if(!confirm('This will replace everything currently in the builder with the imported plan. Continue?')){
+        inputEl.value = '';
+        return;
+      }
+      data = deepMerge(defaultData(), bundle.planData);
+      if(bundle.resumeFiles){
+        for(const id in bundle.resumeFiles){
+          await saveResumeFile(id, bundle.resumeFiles[id]);
+        }
+      }
+      if(bundle.docFiles){
+        for(const id in bundle.docFiles){
+          await saveDocFile(id, bundle.docFiles[id]);
+        }
+      }
+      scheduleSave();
+      renderAll();
+      alert('Your plan backup was opened.');
+    }catch(err){
+      alert("Couldn't read that file. Please choose a backup you downloaded from this builder.");
+    }
+    inputEl.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ============ FIELD BUILDERS ============ */
+function aiBtn(path){ return ''; }
+
+function field(labelText, path, opts={}){
+  const isTextarea = opts.textarea;
+  const value = getPath(data, path) || '';
+  const hint = opts.hint ? `<span class="hint"> — ${esc(opts.hint)}</span>` : '';
+  FIELD_META[path] = {label:labelText, hint:opts.hint||''};
+  const id = fldId(path);
+  const extra = opts.onExtra || '';
+  const tag = isTextarea
+    ? `<textarea id="${id}" rows="${opts.rows||3}" oninput="setPath(data,'${path}',this.value);scheduleSave();updateNode('${path.split('.')[0]}');${extra}">${esc(value)}</textarea>`
+    : `<input id="${id}" type="text" value="${esc(value)}" oninput="setPath(data,'${path}',this.value);scheduleSave();updateNode('${path.split('.')[0]}');${extra}">`;
+  return `<div class="field"><label for="${id}">${esc(labelText)}${hint}</label>${tag}</div>`;
+}
+
+function updateNode(sectionId){
+  const idx = SECTIONS.findIndex(s=>s.id===sectionId);
+  if(idx===-1) return;
+  const nodes = document.querySelectorAll('.timeline .tl-node');
+  if(nodes[idx] && isComplete(sectionId)){ nodes[idx].classList.add('done'); nodes[idx].innerHTML = '&#10003;'; }
+}
+
+function dynTable(sectionKey, listKey, cols, addLabel){
+  const list = data[sectionKey][listKey];
+  let html = `<div class="table-scroll" tabindex="0" role="region" aria-label="${esc(addLabel.replace(/^Add /,''))} table"><table class="dyn-table"><thead><tr>`;
+  cols.forEach(c=> html += `<th>${esc(c.label)}</th>`);
+  html += `<th style="width:30px;"></th></tr></thead><tbody id="tbody-${sectionKey}-${listKey}">`;
+  list.forEach((row,i)=>{ html += dynRow(sectionKey,listKey,cols,i); });
+  html += `</tbody></table></div>
+  <div style="margin-top:10px;margin-bottom:6px;"><button class="btn btn-outline btn-sm add-row-btn" onclick="addRow('${sectionKey}','${listKey}','${cols.map(c=>c.key).join('|')}')">+ ${esc(addLabel)}</button></div>`;
+  return html;
+}
+function dynRow(sectionKey, listKey, cols, i){
+  const row = data[sectionKey][listKey][i];
+  let html = `<tr id="row-${sectionKey}-${listKey}-${i}">`;
+  cols.forEach(c=>{
+    const v = row[c.key]||'';
+    const extra = c.onExtra || '';
+    if(c.type === 'select'){
+      let opts = `<option value=""${v===''?' selected':''}>Select...</option>`;
+      (c.options||[]).forEach(o=>{ opts += `<option value="${esc(o)}"${v===o?' selected':''}>${esc(o)}</option>`; });
+      html += `<td><select aria-label="${esc(c.label)}, row ${i+1}" onchange="data.${sectionKey}.${listKey}[${i}].${c.key}=this.value;scheduleSave();renderMain();${extra}">${opts}</select></td>`;
+    } else {
+      html += `<td><input type="text" aria-label="${esc(c.label)}, row ${i+1}" value="${esc(v)}" oninput="data.${sectionKey}.${listKey}[${i}].${c.key}=this.value;scheduleSave();${extra}"></td>`;
+    }
+  });
+  html += `<td><button class="rm-row" title="Remove row" aria-label="Remove row ${i+1}" onclick="removeRow('${sectionKey}','${listKey}',${i})">&times;</button></td></tr>`;
+  return html;
+}
+function addRow(sectionKey, listKey, keysStr){
+  const keys = keysStr.split('|'); const obj = {};
+  keys.forEach(k=>obj[k]='');
+  data[sectionKey][listKey].push(obj); scheduleSave(); renderMain();
+}
+function removeRow(sectionKey, listKey, i){
+  data[sectionKey][listKey].splice(i,1); scheduleSave(); renderMain();
+}
+
+/* ---- Business Model Canvas field helper ---- */
+function bmcField(label, path, hint, area, colorClass){
+  const value = getPath(data, path) || '';
+  const id = fldId(path);
+  FIELD_META[path] = {label, hint};
+  return `<div class="bmc-cell ${colorClass}" style="grid-area:${area};">
+    <label for="${id}">${esc(label)}</label>
+    <textarea id="${id}" rows="5" placeholder="${esc(hint)}" oninput="setPath(data,'${path}',this.value);scheduleSave();updateNode('s1')">${esc(value)}</textarea>
+  </div>`;
+}
+function bmcEditGrid(){
+  return `<div class="bmc-grid">
+    ${bmcField('Key Partners','s1.bmc.partners',"Who helps you do this that you don't do yourself?",'partners','c-pink')}
+    ${bmcField('Key Activities','s1.bmc.activities','What must you do well to deliver the value proposition?','activities','c-pink')}
+    ${bmcField('Key Resources','s1.bmc.resources','What assets does the value proposition require?','resources','c-pink')}
+    ${bmcField('Value Proposition','s1.bmc.value','What problem do you solve, or need do you satisfy?','value','c-blue')}
+    ${bmcField('Customer Relationships','s1.bmc.relationships','What type of relationship does each segment expect?','relationships','c-yellow')}
+    ${bmcField('Channels','s1.bmc.channels','How do you reach and deliver to customers?','channels','c-yellow')}
+    ${bmcField('Customer Segments','s1.bmc.segments','Who are you creating value for?','segments','c-yellow')}
+    ${bmcField('Cost Structure','s1.bmc.costs','What are the biggest costs of running this model?','cost','c-green')}
+    ${bmcField('Revenue Streams','s1.bmc.revenue','How does each segment generate revenue?','revenue','c-green')}
+  </div>`;
+}
+
+/* ---- SWOT field helper ---- */
+function swotField(label, path, hint, area, colorClass){
+  const value = getPath(data, path) || '';
+  const id = fldId(path);
+  FIELD_META[path] = {label, hint};
+  return `<div class="swot-cell ${colorClass}" style="grid-area:${area};">
+    <label for="${id}">${esc(label)}</label>
+    <textarea id="${id}" rows="4" placeholder="${esc(hint)}" oninput="setPath(data,'${path}',this.value);scheduleSave();updateNode('s2')">${esc(value)}</textarea>
+  </div>`;
+}
+function swotEditGrid(){
+  return `<div class="swot-grid">
+    ${swotField('Strengths','s2.swot.strengths','Internal advantages — what do you do well?','strengths','s')}
+    ${swotField('Weaknesses','s2.swot.weaknesses','Internal gaps — where are you at a disadvantage?','weaknesses','w')}
+    ${swotField('Opportunities','s2.swot.opportunities','External trends or gaps you could take advantage of','opportunities','o')}
+    ${swotField('Threats','s2.swot.threats','External risks — competitors, trends, or conditions working against you','threats','t')}
+  </div>`;
+}
+
+/* ---- Resume / Bio upload rows (Appendix) ---- */
+function resumeRowHtml(r){
+  const fileInfo = r.fileName
+    ? `${esc(r.fileName)} (${humanSize(r.size)}) &nbsp; <button type="button" class="btn btn-outline btn-sm" onclick="viewResumeFile('${r.id}')">View</button>`
+    : `<span class="hint">No file selected</span>`;
+  return `<div class="resume-row" id="resume-row-${r.id}">
+    <div class="row2">
+      <div class="field"><label for="resume-label-${r.id}">Name / Role</label>
+        <input id="resume-label-${r.id}" type="text" value="${esc(r.label)}" oninput="updateResumeLabel('${r.id}', this.value)">
+      </div>
+      <div class="field"><label for="resume-file-${r.id}">File — PDF, Word doc, or image (up to 1.5MB)</label>
+        <input id="resume-file-${r.id}" type="file" accept=".pdf,.doc,.docx,image/*" onchange="handleResumeFile('${r.id}', this)">
+        <div class="hint" style="display:block;margin-top:6px;">${fileInfo}</div>
+      </div>
+    </div>
+    <button type="button" class="btn btn-outline btn-sm btn-danger" onclick="removeResumeRow('${r.id}')">Remove</button>
+  </div>`;
+}
+function renderResumeRows(){
+  let html = `<div id="resume-list">`;
+  data.appendix.resumes.forEach(r=>{ html += resumeRowHtml(r); });
+  html += `</div>
+  <div style="margin-top:6px;margin-bottom:6px;"><button class="btn btn-outline btn-sm" onclick="addResumeRow()">+ Add resume / bio</button></div>`;
+  return html;
+}
+function addResumeRow(){
+  data.appendix.resumes.push({id:uid(), label:'', fileName:'', mimeType:'', size:0});
+  scheduleSave(); renderMain();
+}
+function removeResumeRow(id){
+  data.appendix.resumes = data.appendix.resumes.filter(r=>r.id!==id);
+  scheduleSave(); renderMain();
+  deleteResumeFile(id);
+}
+function updateResumeLabel(id, value){
+  const entry = data.appendix.resumes.find(r=>r.id===id);
+  if(entry){ entry.label = value; scheduleSave(); }
+}
+function handleResumeFile(id, inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  if(!file) return;
+  if(file.size > 1.5*1024*1024){
+    alert('That file is larger than 1.5MB — please choose a smaller file. Your browser only has a small amount of space for saving files.');
+    inputEl.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    const dataUrl = e.target.result;
+    if(!(await saveResumeFile(id, dataUrl))){ alert("This browser is out of space for uploaded files. Try a smaller file, or remove one you've already added."); inputEl.value=''; return; }
+    const entry = data.appendix.resumes.find(r=>r.id===id);
+    if(entry){ entry.fileName = file.name; entry.mimeType = file.type; entry.size = file.size; }
+    scheduleSave();
+    renderMain();
+  };
+  reader.readAsDataURL(file);
+}
+async function viewResumeFile(id){
+  const dataUrl = await loadResumeFile(id);
+  if(!dataUrl){ alert("Couldn't load this file — please try re-uploading it."); return; }
+  try{
+    const blob = await (await fetch(dataUrl)).blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  }catch(e){
+    window.open(dataUrl, '_blank');
+  }
+}
+
+/* ---- Other supporting document upload rows (Appendix) ---- */
+function docRowHtml(r){
+  const fileInfo = r.fileName
+    ? `${esc(r.fileName)} (${humanSize(r.size)}) &nbsp; <button type="button" class="btn btn-outline btn-sm" onclick="viewDocFile('${r.id}')">View</button>`
+    : `<span class="hint">No file selected</span>`;
+  return `<div class="resume-row" id="doc-row-${r.id}">
+    <div class="row2">
+      <div class="field"><label for="doc-label-${r.id}">Document Name</label>
+        <input id="doc-label-${r.id}" type="text" value="${esc(r.label)}" placeholder="e.g. Business License, Certificate of Insurance" oninput="updateDocLabel('${r.id}', this.value)">
+      </div>
+      <div class="field"><label for="doc-file-${r.id}">File — PDF, Word doc, spreadsheet, or image (up to 1.5MB)</label>
+        <input id="doc-file-${r.id}" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" onchange="handleDocFile('${r.id}', this)">
+        <div class="hint" style="display:block;margin-top:6px;">${fileInfo}</div>
+      </div>
+    </div>
+    <button type="button" class="btn btn-outline btn-sm btn-danger" onclick="removeDocRow('${r.id}')">Remove</button>
+  </div>`;
+}
+function renderDocRows(){
+  let html = `<div id="doc-list">`;
+  data.appendix.otherDocs.forEach(r=>{ html += docRowHtml(r); });
+  html += `</div>
+  <div style="margin-top:6px;margin-bottom:6px;"><button class="btn btn-outline btn-sm" onclick="addDocRow()">+ Add document</button></div>`;
+  return html;
+}
+function addDocRow(){
+  data.appendix.otherDocs.push({id:uid(), label:'', fileName:'', mimeType:'', size:0});
+  scheduleSave(); renderMain();
+}
+function removeDocRow(id){
+  data.appendix.otherDocs = data.appendix.otherDocs.filter(r=>r.id!==id);
+  scheduleSave(); renderMain();
+  deleteDocFile(id);
+}
+function updateDocLabel(id, value){
+  const entry = data.appendix.otherDocs.find(r=>r.id===id);
+  if(entry){ entry.label = value; scheduleSave(); }
+}
+function handleDocFile(id, inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  if(!file) return;
+  if(file.size > 1.5*1024*1024){
+    alert('That file is larger than 1.5MB — please choose a smaller file. Your browser only has a small amount of space for saving files.');
+    inputEl.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    const dataUrl = e.target.result;
+    if(!(await saveDocFile(id, dataUrl))){ alert("This browser is out of space for uploaded files. Try a smaller file, or remove one you've already added."); inputEl.value=''; return; }
+    const entry = data.appendix.otherDocs.find(r=>r.id===id);
+    if(entry){ entry.fileName = file.name; entry.mimeType = file.type; entry.size = file.size; }
+    scheduleSave();
+    renderMain();
+  };
+  reader.readAsDataURL(file);
+}
+async function viewDocFile(id){
+  const dataUrl = await loadDocFile(id);
+  if(!dataUrl){ alert("Couldn't load this file — please try re-uploading it."); return; }
+  try{
+    const blob = await (await fetch(dataUrl)).blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  }catch(e){
+    window.open(dataUrl, '_blank');
+  }
+}
+
+/* ============ SECTION VIEWS (EDIT FORM) ============ */
+function viewInstructions(){
+  return `<h2 class="section-title">Welcome to the Business Plan Builder</h2>
+  <span class="session-tag">Start here — this page won't affect your plan</span>
+
+  <div class="notice">
+    <strong>Your plan stays on your computer.</strong> Everything you type is saved only in this web browser, on this device. Nothing is sent to the Miami Valley SBDC or anyone else. That also means your plan won't appear on a different computer, and clearing your browser history can erase it, so use <b>Download a backup</b> in the menu to keep a copy.
+  </div>
+
+  <div class="warning">
+    <strong>Using a shared or public computer?</strong> The next person to use this browser could see your plan. When you're done, download a backup, then click <b>Reset All Data</b>. Please don't enter Social Security numbers, bank account numbers or passwords anywhere in this tool.
+  </div>
+
+  <h3 class="sub">1. Work through the steps</h3>
+  <ul class="info-list">
+    <li>The menu walks you through a business plan in order, from <b>Foundations</b> to <b>Executive Summary</b>. On a phone, the menu appears below the form.</li>
+    <li>You don't have to go in order — click any step to jump to it.</li>
+    <li>A step's circle turns into a checkmark once you've entered anything in it, so you can see your progress at a glance.</li>
+    <li><b>Executive Summary</b> comes last on purpose. It's a snapshot of your whole plan, so it's easiest to write after everything else.</li>
+  </ul>
+
+  <h3 class="sub">2. Fill in the fields</h3>
+  <ul class="info-list">
+    <li>Most fields are simple text boxes. Gray text next to a label is a hint about what to put there.</li>
+    <li>Tables like Competitors, Startup Costs or Team Roles start with one blank row. Click <b>"+ Add"</b> to add more, or <b>×</b> to remove a row.</li>
+    <li>The Financials and Operations steps do the math for you: break-even, revenue by product line, payroll and loan payments. Those numbers also build a projected income statement, cash flow statement and balance sheet in your plan's Appendix.</li>
+    <li>Your answers save automatically in this browser a moment after you stop typing. Watch for the small "Saved" note at the top of the page.</li>
+    <li><b>Reset All Data</b> at the bottom of the menu clears everything. Use it only if you want to start over.</li>
+  </ul>
+
+  <h3 class="sub">3. Keep a backup</h3>
+  <ul class="info-list">
+    <li><b>Download a backup</b> saves your whole plan, including uploaded resumes and documents, as one small file.</li>
+    <li>To keep working on another computer, or if your browser data gets cleared, click <b>Open a backup</b> and choose that file.</li>
+    <li>It's a good habit to download a new backup each time you finish a work session.</li>
+  </ul>
+
+  <h3 class="sub">4. Preview and share your finished plan</h3>
+  <ul class="info-list">
+    <li>Click <b>Preview Plan</b> any time to see your answers assembled into a real business plan, with a cover page, table of contents and standard sections.</li>
+    <li>Choose a <b>Plan Format</b>: the full Traditional plan, an Investor/Loan-Ready version that puts the funding request up front, or a condensed Lean One-Page snapshot. You can also leave out sections you don't need.</li>
+    <li>Choose a <b>Visual Style</b>: Classic Formal, Modern Clean or Minimalist.</li>
+    <li>Click <b>Download as Word Doc</b> for a file you can edit, or <b>Print / Save as PDF</b> to print it or choose "Save as PDF" in your browser's print window.</li>
+  </ul>
+
+  <div class="cta"><strong>Want an expert to look it over?</strong> Miami Valley SBDC advisors help business owners with their plans one-on-one, at no cost. <a href="https://clients.ohiosbdc.ohio.gov/reg.aspx?mode=counsel&amp;center=17047&amp;subloc=0">Request advising</a> or call <a href="tel:+19372109460">937-210-9460</a>.</div>
+
+  <div class="nav-footer">
+    <span></span>
+    <button class="btn btn-primary" onclick="goTo('business')">Get Started →</button>
+  </div>`;
+}
+
+function viewBusiness(){
+  return `<h2 class="section-title">Business Basics</h2>
+  <span class="session-tag">Complete anytime — used throughout your plan</span>
+  <div class="row2">${field('Business Name','business.name')}${field('Owner / Founder Name','business.owner')}</div>
+  <div class="row2">${field('Legal Structure','business.structure',{hint:'LLC, Sole Proprietor, S-Corp, etc.'})}${field('Business Location(s)','business.location')}</div>
+  ${field('Plan Date','business.planDate',{hint:'optional — defaults to today on the printed plan'})}
+  <div class="nav-footer"><span></span><button class="btn btn-primary" onclick="goTo('s1')">Next: Foundations →</button></div>`;
+}
+
+function viewS1(){
+  return `<h2 class="section-title">Section 1: Foundations</h2>
+  <span class="session-tag">Why your business exists, what you offer, and how the pieces fit together.</span>
+  <h3 class="sub">Mission &amp; Vision</h3>
+  ${field('Mission Statement','s1.mission',{textarea:true,rows:2,hint:'Why does your business exist? Who do you serve?'})}
+  ${field('Vision Statement','s1.vision',{textarea:true,rows:2,hint:'Where is this business in 3–5 years?'})}
+  <h3 class="sub">Value Proposition</h3>
+  <div class="row2">${field('Customer segment I serve','s1.vpSegment')}${field("Customer's problem or need",'s1.vpProblem')}</div>
+  <div class="row2">${field('My product/service','s1.vpProduct')}${field('How it solves the problem','s1.vpBenefit')}</div>
+  ${field('What makes me different from alternatives?','s1.vpDiff',{textarea:true,rows:2})}
+  <h3 class="sub">Business Model Canvas</h3>
+  <div class="callout">Fill in this order: Value Proposition &amp; Customer Segments first, then Relationships/Channels/Revenue, then Resources/Activities/Partners/Costs last.</div>
+  ${bmcEditGrid()}
+  <div class="nav-footer">
+    <button class="btn btn-outline" onclick="goTo('business')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s2')">Next: Customer & Market →</button>
+  </div>`;
+}
+
+function viewS2(){
+  return `<h2 class="section-title">Section 2: Customer &amp; Market Research</h2>
+  <span class="session-tag">Who your customers are, how big the market is, and who you compete with.</span>
+  <h3 class="sub">Customer Discovery</h3>
+  ${field('Customer Profile — Demographics','s2.demo',{textarea:true,rows:2,hint:'age, location, income, occupation, etc.'})}
+  ${field('Customer Profile — Needs, Goals & Pain Points','s2.needs',{textarea:true,rows:2})}
+  ${field('Where does this customer currently go to solve this problem?','s2.alt',{textarea:true,rows:2})}
+  ${field('Estimated number of potential customers','s2.size')}
+  <h3 class="sub">Market Analysis</h3>
+  ${field('Total addressable market — how big is the market?','s2.tam',{textarea:true,rows:2})}
+  ${field('Key market trends','s2.trends',{textarea:true,rows:2,hint:'growth, decline, regulation, technology'})}
+  <h3 class="sub">Competitive Intelligence</h3>
+  ${dynTable('s2','competitors',[
+    {key:'name',label:'Competitor'},{key:'strengths',label:'Strengths'},
+    {key:'weaknesses',label:'Weaknesses'},{key:'diff',label:'How I Differentiate'}
+  ],'Add competitor')}
+  <h3 class="sub">SWOT Analysis</h3>
+  <div class="callout">Use what you learned above — strengths and weaknesses are usually internal to your business; opportunities and threats usually come from the market and competitors.</div>
+  ${swotEditGrid()}
+  <h3 class="sub">Market Research Tools &amp; Sources</h3>
+  ${field('Tools, databases, surveys or interviews used','s2.tools',{textarea:true,rows:3})}
+  <div class="nav-footer">
+    <button class="btn btn-outline" onclick="goTo('s1')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s3')">Next: Branding & Sales →</button>
+  </div>`;
+}
+
+function viewS3(){
+  return `<h2 class="section-title">Section 3: Messaging, Branding &amp; Sales</h2>
+  <span class="session-tag">How you'll present your business and turn interest into sales.</span>
+  <h3 class="sub">Brand Identity</h3>
+  <div class="row2">${field('Brand Name','s3.brandName')}${field('Tagline / Slogan','s3.tagline',{})}</div>
+  <div class="row2">${field('Brand Personality','s3.personality',{hint:'3–5 adjectives'})}${field('Key Brand Colors / Visual Style','s3.colors')}</div>
+  <h3 class="sub">Core Messaging</h3>
+  ${field('30-Second Elevator Pitch','s3.pitch',{textarea:true,rows:3})}
+  ${field('Top 3 Key Messages / Talking Points','s3.messages',{textarea:true,rows:3})}
+  <h3 class="sub">Sales Strategy</h3>
+  ${field('Sales Channels','s3.channels',{textarea:true,rows:2,hint:'direct, online, retail, wholesale, referral'})}
+  ${field('Sales Process','s3.process',{textarea:true,rows:3,hint:'steps from first contact to closed sale'})}
+  ${field('Sales Goals for Year 1','s3.goals')}
+  <div class="nav-footer">
+    <button class="btn btn-outline" onclick="goTo('s2')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s4')">Next: Financials →</button>
+  </div>`;
+}
+
+function viewS4(){
+  return `<h2 class="section-title">Section 4: Financial Statements &amp; Projections</h2>
+  <span class="session-tag">What it costs to start, what you expect to earn, and when you'll break even. The numbers here build your financial statements automatically.</span>
+  <div class="callout">Want month-by-month projections for three years? Download the free <a href="https://sbdcec.com/downloads/">Pro Forma Forecasting Tool</a> spreadsheet from our Resources page.</div>
+  <h3 class="sub">Startup Costs</h3>
+  ${dynTable('s4','startup',[{key:'item',label:'Item'},{key:'cost',label:'Estimated Cost'},{key:'type',label:'One-Time / Recurring'}],'Add cost item')}
+  ${field("Owner's Initial Cash Investment",'s4.startingCash',{hint:"cash you're putting in yourself before any outside funding — used below to project your cash flow and balance sheet"})}
+  <h3 class="sub">Revenue Forecast by Product Line</h3>
+  <div class="callout">Add each product or service line with its sales price and COGS (cost of goods sold) per unit, then set units sold for each quarter separately — so you can build in seasonality instead of assuming flat sales all year. Margin per unit calculates automatically and this feeds directly into your Income Statement, Cash Flow, and Balance Sheet in the Appendix.</div>
+  ${dynTable('s4','revenueForecast',[
+    {key:'product',label:'Product/Service Line'},
+    {key:'price',label:'Sales Price per Unit ($)',onExtra:'calcRevenueForecast();'},
+    {key:'cogsPerUnit',label:'COGS per Unit ($)',onExtra:'calcRevenueForecast();'},
+    {key:'unitsQ1',label:'Units in Q1',onExtra:'calcRevenueForecast();'},
+    {key:'unitsQ2',label:'Units in Q2',onExtra:'calcRevenueForecast();'},
+    {key:'unitsQ3',label:'Units in Q3',onExtra:'calcRevenueForecast();'},
+    {key:'unitsQ4',label:'Units in Q4',onExtra:'calcRevenueForecast();'}
+  ],'Add product line')}
+  <div class="calc-box" id="revenueForecastCalc"></div>
+  <h3 class="sub">Income Statement Projection (Year 1, by Quarter)</h3>
+  <div class="callout">Set a <b>Type</b> for each line so the Appendix can automatically build a full Income Statement, Cash Flow Statement, and Balance Sheet from these numbers. Use this for revenue or costs not already captured in your Revenue Forecast above.</div>
+  ${dynTable('s4','income',[
+    {key:'item',label:'Line Item'},
+    {key:'type',label:'Type',type:'select',options:['Revenue','Cost of Goods Sold','Operating Expense']},
+    {key:'q1',label:'Q1'},{key:'q2',label:'Q2'},{key:'q3',label:'Q3'},{key:'q4',label:'Q4'}
+  ],'Add line item')}
+  <h3 class="sub">Cash Flow Summary</h3>
+  ${field('Projected cash in vs. cash out; anticipated shortfalls','s4.cashflow',{textarea:true,rows:3})}
+  <h3 class="sub">Break-Even Analysis</h3>
+  <div class="row3">${field('Fixed Costs (monthly)','s4.fixedCosts',{onExtra:'calcBreakEven();'})}${field('Variable Cost per Unit','s4.variableCost',{onExtra:'calcBreakEven();'})}${field('Price per Unit','s4.price',{onExtra:'calcBreakEven();'})}</div>
+  <div class="calc-box" id="breakEvenCalc"></div>
+  ${field('Break-Even Point (units and/or dollars)','s4.breakeven',{hint:'auto-fills from the calculation above, or type your own'})}
+  <div class="nav-footer">
+    <button class="btn btn-outline" onclick="goTo('s3')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s5')">Next: Pricing →</button>
+  </div>`;
+}
+
+function viewS5(){
+  return `<h2 class="section-title">Section 5: Pricing Mastery</h2>
+  <span class="session-tag">Set prices that cover your costs and fit the market.</span>
+  <h3 class="sub">Service-Based Pricing</h3>
+  <div class="row2">${field('Hourly cost of labor','s5.laborCost')}${field('Overhead per billable hour','s5.overhead')}</div>
+  <div class="row2">${field('Desired profit margin (%)','s5.margin')}${field('Calculated service price','s5.svcPrice')}</div>
+  ${field('Comparable market rate','s5.marketRate')}
+  <h3 class="sub">Product-Based Pricing</h3>
+  ${dynTable('s5','productCosts',[{key:'component',label:'Cost Component'},{key:'amount',label:'Amount'}],'Add cost component')}
+  <div class="row3" style="margin-top:14px;">${field('COGS total per unit','s5.cogs')}${field('Desired markup / margin (%)','s5.markup')}${field('Final retail price','s5.retailPrice')}</div>
+  <h3 class="sub">Pricing Strategy Notes</h3>
+  ${field('Value-based, cost-plus, competitive, or penetration pricing? Discounts, bundles, tiers?','s5.notes',{textarea:true,rows:3})}
+  <div class="nav-footer">
+    <button class="btn btn-outline" onclick="goTo('s4')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s6')">Next: Operations →</button>
+  </div>`;
+}
+
+function viewS6(){
+  return `<h2 class="section-title">Section 6: Operations</h2>
+  <span class="session-tag">Your team, inventory, funding sources and how you'll use the money.</span>
+  <h3 class="sub">Human Resources</h3>
+  <div class="callout">Add an hourly rate and hours/month for each role and this will automatically calculate your total staffing cost — including payroll burden and benefits — and factor it into your Operating Expenses in the Appendix. Add Monthly Benefits (health insurance, retirement match, etc.) per role only if you plan to offer it — leave it blank if not.</div>
+  ${dynTable('s6','roles',[
+    {key:'role',label:'Role/Position'},
+    {key:'resp',label:'Responsibilities'},
+    {key:'type',label:'Type',type:'select',options:['Full-Time','Part-Time','Contract'],onExtra:'calcPayroll();'},
+    {key:'rate',label:'Hourly Rate ($)',onExtra:'calcPayroll();'},
+    {key:'hours',label:'Hours/Month',onExtra:'calcPayroll();'},
+    {key:'benefits',label:'Monthly Benefits ($)',onExtra:'calcPayroll();'}
+  ],'Add role')}
+  ${field('Payroll Burden Rate (%)','s6.burdenRate',{hint:"covers employer payroll taxes and workers' comp — applied to Full-Time/Part-Time pay only, not Contract. Benefits like health insurance go in the table above instead.",onExtra:'calcPayroll();'})}
+  <div class="calc-box" id="payrollCalc"></div>
+  <h3 class="sub">Inventory Management</h3>
+  ${field('How will you track, store, order & restock inventory? (skip if service-only)','s6.inventory',{textarea:true,rows:3})}
+  <h3 class="sub">Access to Capital</h3>
+  <div class="callout">Set a <b>Type</b> for each source so the Appendix can correctly separate loans (a liability you'll repay) from equity and grants (which don't get repaid) on your projected Balance Sheet. For a loan, add an <b>Interest Rate</b> and <b>Term</b> to get an estimated monthly payment and have it factored into your Cash Flow and Balance Sheet projections.</div>
+  ${dynTable('s6','funding',[
+    {key:'source',label:'Funding Source'},
+    {key:'type',label:'Type',type:'select',options:['Loan / Debt','Equity / Investment','Grant (no repayment)'],onExtra:'calcLoanSchedules();'},
+    {key:'amount',label:'Amount',onExtra:'calcLoanSchedules();'},
+    {key:'rate',label:'Interest Rate (% APR)',onExtra:'calcLoanSchedules();'},
+    {key:'term',label:'Term (months)',onExtra:'calcLoanSchedules();'},
+    {key:'status',label:'Status/Notes'}
+  ],'Add funding source')}
+  <div class="calc-box" id="loanCalc"></div>
+  <h3 class="sub">Use of Funds</h3>
+  <div class="callout">If you're requesting outside funding, break down exactly what it will be spent on. This detail will appear in your plan's Appendix.</div>
+  ${dynTable('s6','useOfFunds',[{key:'category',label:'Category'},{key:'amount',label:'Amount'},{key:'notes',label:'Purpose / Notes'}],'Add line item')}
+  <div class="nav-footer">
+    <button class="btn btn-outline" onclick="goTo('s5')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('s7')">Next: Finalize & Review →</button>
+  </div>`;
+}
+
+function viewS7(){
+  const items = [
+    ['exec','Executive Summary completed'],['mvvp','Mission, Vision & Value Proposition finalized'],
+    ['bmc','Business Model Canvas finalized'],['customer','Customer Discovery & Market Analysis complete'],
+    ['competitive','Competitive Intelligence & SWOT complete'],['branding','Messaging, Branding & Sales Strategy complete'],
+    ['financials','Financial Statements & Projections complete'],['pricing','Pricing Strategy set'],
+    ['ops','Operations Plan (HR, Inventory, Capital) complete'],['reviewed','Reviewed by an SBDC advisor or mentor'],
+  ];
+  let checklistHtml = '';
+  items.forEach(([key,label])=>{
+    const checked = data.s7.checklist[key] ? 'checked' : '';
+    checklistHtml += `<label class="checklist-item"><input type="checkbox" ${checked} onchange="data.s7.checklist.${key}=this.checked;scheduleSave();updateNode('s7')">${esc(label)}</label>`;
+  });
+  return `<h2 class="section-title">Section 7: Finalizing the Plan &amp; Feasibility Review</h2>
+  <span class="session-tag">Check your plan is complete and take an honest look at whether it's ready to launch.</span>
+  <h3 class="sub">Business Plan Completion Checklist</h3>
+  ${checklistHtml}
+  <h3 class="sub" style="margin-top:26px;">Business Feasibility Audit</h3>
+  <div class="callout">Answer honestly — this is a gut-check before you commit resources to launch. These answers will appear as your plan's Risk Analysis. An SBDC advisor can talk them through with you at no cost — <a href="https://clients.ohiosbdc.ohio.gov/reg.aspx?mode=counsel&amp;center=17047&amp;subloc=0">request advising</a>.</div>
+  ${field('Is there proven demand for this product/service? What evidence supports this?','s7.demand',{textarea:true,rows:2})}
+  ${field('Can this business generate enough revenue to be sustainable?','s7.revenue',{textarea:true,rows:2,hint:'reference your break-even analysis'})}
+  ${field('What are the top 3 risks, and how will you mitigate each?','s7.risks',{textarea:true,rows:3})}
+  ${field('Do you have (or can you access) the capital, skills, and time needed to launch?','s7.capital',{textarea:true,rows:2})}
+  ${field('Overall Feasibility Assessment','s7.assessment',{hint:'Go / Go with changes / Not yet'})}
+  <h3 class="sub">Next Steps &amp; Action Plan</h3>
+  ${dynTable('s7','actions',[{key:'item',label:'Action Item'},{key:'owner',label:'Owner'},{key:'date',label:'Target Date'}],'Add action item')}
+  <h3 class="sub">Resumes &amp; Bios</h3>
+  <div class="callout">Upload a resume, bio, or headshot for each founder or key team member. These will be listed in your plan's Appendix — photos appear inline, and other file types are listed for you to attach separately when you submit your plan.</div>
+  ${renderResumeRows()}
+  <h3 class="sub">Other Supporting Documents</h3>
+  <div class="callout">Upload licenses, permits, letters of intent, market research, or any other supporting files. These will be listed in your plan's Appendix the same way — images appear inline, other file types are listed for you to attach separately.</div>
+  ${renderDocRows()}
+  <div class="nav-footer">
+    <button class="btn btn-outline" onclick="goTo('s6')">← Back</button>
+    <button class="btn btn-primary" onclick="goTo('exec')">Next: Executive Summary →</button>
+  </div>`;
+}
+
+function viewExec(){
+  return `<h2 class="section-title">Executive Summary</h2>
+  <span class="session-tag">Write this last — it summarizes everything else.</span>
+  <div class="callout">The executive summary is a snapshot of your whole plan. It appears first in your finished document, but write it after everything else is done.</div>
+  ${field('What problem does your business solve, and for whom?','exec.problem',{textarea:true,rows:2})}
+  ${field('Summary of products/services offered','exec.products',{textarea:true,rows:2})}
+  ${field('Funding needed (if any) and intended use','exec.fundingUse',{textarea:true,rows:2})}
+  ${field('Key financial highlight','exec.highlight',{hint:'projected Year 1 revenue, break-even point, etc.'})}
+  ${field('Long-term vision (3–5 years)','exec.longTermVision',{textarea:true,rows:2})}
+  <div class="nav-footer">
+    <button class="btn btn-outline" onclick="goTo('s7')">← Back</button>
+    <button class="btn btn-gold" onclick="goTo('preview')">Preview Full Plan →</button>
+  </div>`;
+}
+
+/* ============ DOCUMENT CONTENT GENERATORS ============ */
+function docP(v){ return val(v) ? `<p class="doc-p">${val(v)}</p>` : ''; }
+function docBlock(title, bodyHtml){
+  return bodyHtml ? `<h3 class="doc-h3">${esc(title)}</h3>${bodyHtml}` : '';
+}
+function docTable(rows, cols){
+  const anyData = (rows||[]).some(r => cols.some(c=>val(r[c.key])));
+  if(!anyData) return '';
+  let html = `<table><thead><tr>`;
+  cols.forEach(c=> html += `<th>${esc(c.label)}</th>`);
+  html += `</tr></thead><tbody>`;
+  rows.forEach(r=>{
+    if(!cols.some(c=>val(r[c.key]))) return;
+    html += '<tr>'; cols.forEach(c=> html += `<td>${val(r[c.key])||''}</td>`); html += '</tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+let WORD_EXPORT_MODE = false;
+
+function bmcTableForWord(){
+  const bmc = data.s1.bmc;
+  const cell = v => val(v) || '—';
+  function td(title, content, rowspan, colspan){
+    const rs = rowspan ? ` rowspan="${rowspan}"` : '';
+    const cs = colspan ? ` colspan="${colspan}"` : '';
+    return `<td${rs}${cs} style="background:#F7F6F1;padding:6pt;vertical-align:top;font-size:10pt;"><strong style="color:#12355B;">${esc(title)}</strong><br>${esc(content)}</td>`;
+  }
+  return `<table border="1" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;font-size:10pt;margin:10pt 0 18pt 0;">
+    <tr>
+      ${td('Key Partners', cell(bmc.partners), 2)}
+      ${td('Key Activities', cell(bmc.activities))}
+      ${td('Value Proposition', cell(bmc.value), 2)}
+      ${td('Customer Relationships', cell(bmc.relationships))}
+      ${td('Customer Segments', cell(bmc.segments), 2)}
+    </tr>
+    <tr>
+      ${td('Key Resources', cell(bmc.resources))}
+      ${td('Channels', cell(bmc.channels))}
+    </tr>
+    <tr>
+      ${td('Cost Structure', cell(bmc.costs), null, 3)}
+      ${td('Revenue Streams', cell(bmc.revenue), null, 2)}
+    </tr>
+  </table>`;
+}
+function swotTableForWord(){
+  const s = data.s2.swot;
+  const cell = v => val(v) || '—';
+  function td(title, content){
+    return `<td style="background:#F7F6F1;padding:8pt;vertical-align:top;font-size:10pt;width:50%;"><strong style="color:#12355B;">${esc(title)}</strong><br>${esc(content)}</td>`;
+  }
+  return `<table border="1" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;font-size:10pt;margin:10pt 0 18pt 0;">
+    <tr>${td('Strengths', cell(s.strengths))}${td('Weaknesses', cell(s.weaknesses))}</tr>
+    <tr>${td('Opportunities', cell(s.opportunities))}${td('Threats', cell(s.threats))}</tr>
+  </table>`;
+}
+function bmcHasData(){
+  const b = data.s1.bmc;
+  return ['partners','activities','value','relationships','segments','resources','channels','costs','revenue'].some(k=>val(b[k]));
+}
+function swotHasData(){
+  const s = data.s2.swot;
+  return ['strengths','weaknesses','opportunities','threats'].some(k=>val(s[k]));
+}
+function bmcDocGrid(){
+  if(!bmcHasData()) return '';
+  if(WORD_EXPORT_MODE) return bmcTableForWord();
+  const bmc = data.s1.bmc;
+  const cell = v => val(v) || '<span class="empty">—</span>';
+  function box(area, title, value){
+    return `<div style="grid-area:${area};display:flex;flex-direction:column;">
+      <div class="hd">${esc(title)}</div>
+      <div class="bx-content">${value}</div>
+    </div>`;
+  }
+  return `<div class="bmc-doc">
+    ${box('partners','Key Partners',cell(bmc.partners))}
+    ${box('activities','Key Activities',cell(bmc.activities))}
+    ${box('value','Value Proposition',cell(bmc.value))}
+    ${box('relationships','Customer Relationships',cell(bmc.relationships))}
+    ${box('segments','Customer Segments',cell(bmc.segments))}
+    ${box('resources','Key Resources',cell(bmc.resources))}
+    ${box('channels','Channels',cell(bmc.channels))}
+    ${box('cost','Cost Structure',cell(bmc.costs))}
+    ${box('revenue','Revenue Streams',cell(bmc.revenue))}
+  </div>`;
+}
+function swotDocGrid(){
+  if(!swotHasData()) return '';
+  if(WORD_EXPORT_MODE) return swotTableForWord();
+  const s = data.s2.swot;
+  const cell = v => val(v) || '<span class="empty">—</span>';
+  return `<div class="swot-doc">
+    <div class="hd">Strengths</div><div class="hd">Weaknesses</div>
+    <div>${cell(s.strengths)}</div><div>${cell(s.weaknesses)}</div>
+    <div class="hd">Opportunities</div><div class="hd">Threats</div>
+    <div>${cell(s.opportunities)}</div><div>${cell(s.threats)}</div>
+  </div>`;
+}
+
+function genExecSummary(){
+  const ex = data.exec;
+  return docBlock('The Problem &amp; Who We Serve', docP(ex.problem))
+    + docBlock('Products &amp; Services', docP(ex.products))
+    + docBlock('Funding Needed &amp; Use', docP(ex.fundingUse))
+    + docBlock('Key Financial Highlight', docP(ex.highlight))
+    + docBlock('Long-Term Vision', docP(ex.longTermVision));
+}
+function genCompanyDescription(){
+  const b = data.business, s1 = data.s1;
+  const structureLine = (val(b.structure) || val(b.location)) ?
+    `${val(b.structure)||'Structure not yet specified'}${val(b.location)? ', based in '+val(b.location) : ''}.` : null;
+  const vpFilled = val(s1.vpSegment)||val(s1.vpProblem)||val(s1.vpProduct)||val(s1.vpBenefit)||val(s1.vpDiff);
+  const vpSentence = vpFilled ? ('For '+(val(s1.vpSegment)||'___')+' who '+ (val(s1.vpProblem)||'___') +', our '+(val(s1.vpProduct)||'product/service')+' provides '+(val(s1.vpBenefit)||'___')+'. Unlike alternatives, '+(val(s1.vpDiff)||'we differentiate by ___')+'.') : null;
+  return docBlock('Mission Statement', docP(s1.mission))
+    + docBlock('Vision Statement', docP(s1.vision))
+    + docBlock('Ownership &amp; Legal Structure', structureLine ? `<p class="doc-p">${structureLine}</p>` : '')
+    + docBlock('Value Proposition', vpSentence ? `<p class="doc-p">${vpSentence}</p>` : '');
+}
+function genMarketAnalysis(){
+  const s2 = data.s2;
+  return docBlock('Target Customer Profile', docP(s2.demo)+docP(s2.needs))
+    + docBlock('Current Alternatives', docP(s2.alt))
+    + docBlock('Market Size', docP(s2.size)+docP(s2.tam))
+    + docBlock('Market Trends', docP(s2.trends))
+    + docBlock('Competitive Analysis', docTable(s2.competitors, [{key:'name',label:'Competitor'},{key:'strengths',label:'Strengths'},{key:'weaknesses',label:'Weaknesses'},{key:'diff',label:'Differentiation'}]))
+    + docBlock('SWOT Analysis', swotDocGrid())
+    + docBlock('Research Sources', docP(s2.tools));
+}
+function genOrgManagement(){
+  const b = data.business, s6 = data.s6;
+  const payroll = computePayrollCost();
+  const ownershipHtml = val(b.owner) ? `<p class="doc-p">${esc(b.owner)} — Owner/Founder</p>` : '';
+  const staffingHtml = (payroll.monthlyGross>0 || payroll.monthlyBenefits>0)
+    ? `<p class="doc-p">${fmtMoney(payroll.monthlyTotal)}/month total, including an estimated ${payroll.burdenPct}% payroll burden on Full-Time/Part-Time wages${payroll.monthlyBenefits>0? ' and '+fmtMoney(payroll.monthlyBenefits)+'/month in benefits' : ''} — about ${fmtMoney(payroll.annual)}/year. See the Appendix for how this factors into the full financial projections.</p>`
+    : '';
+  return docBlock('Ownership', ownershipHtml)
+    + docBlock('Team &amp; Roles', docTable(s6.roles, [{key:'role',label:'Role'},{key:'resp',label:'Responsibilities'},{key:'type',label:'Type'},{key:'rate',label:'Hourly Rate'},{key:'hours',label:'Hours/Month'},{key:'benefits',label:'Monthly Benefits'}]))
+    + docBlock('Estimated Staffing Cost', staffingHtml);
+}
+function genProductService(){
+  const s1 = data.s1, s5 = data.s5;
+  const priceLine = val(s5.svcPrice) ? 'Service price: '+val(s5.svcPrice) : (val(s5.retailPrice) ? 'Retail price: '+val(s5.retailPrice) : null);
+  const descHtml = val(s1.vpProduct) ? `<p class="doc-p">${esc(s1.vpProduct)}${val(s1.vpBenefit)? ' — '+esc(s1.vpBenefit):''}</p>` : '';
+  const pricingHtml = priceLine ? `<p class="doc-p">${priceLine} — see Financial Plan for full pricing detail.</p>` : '';
+  return docBlock('Description', descHtml)
+    + docBlock('What Sets It Apart', docP(s1.vpDiff))
+    + docBlock('Pricing Overview', pricingHtml);
+}
+function genMarketingSales(){
+  const s3 = data.s3;
+  const brandHtml = (val(s3.brandName)||val(s3.tagline)) ? `<p class="doc-p">${val(s3.brandName)? esc(s3.brandName) : ''}${val(s3.tagline)?' — "'+esc(s3.tagline)+'"':''}</p>` : '';
+  return docBlock('Brand', brandHtml + docP(s3.personality))
+    + docBlock('Elevator Pitch', docP(s3.pitch))
+    + docBlock('Key Messages', docP(s3.messages))
+    + docBlock('Sales Channels &amp; Process', docP(s3.channels)+docP(s3.process))
+    + docBlock('Year 1 Sales Goals', docP(s3.goals));
+}
+function genFundingRequest(){
+  const ex = data.exec, s6 = data.s6;
+  return docBlock('Funding Needed &amp; Intended Use', docP(ex.fundingUse))
+    + docBlock('Funding Sources', docTable(s6.funding, [{key:'source',label:'Source'},{key:'amount',label:'Amount'},{key:'status',label:'Status'}]));
+}
+function genFinancials(){
+  const s4 = data.s4, s5 = data.s5;
+  const breakEvenHtml = (val(s4.fixedCosts)||val(s4.variableCost)||val(s4.price)||val(s4.breakeven)) ?
+    `<p class="doc-p">Fixed costs: ${val(s4.fixedCosts)||'—'} | Variable cost/unit: ${val(s4.variableCost)||'—'} | Price: ${val(s4.price)||'—'} | Break-even: ${val(s4.breakeven)||'—'}</p>` : '';
+  const svcPricingHtml = (val(s5.laborCost)||val(s5.svcPrice)) ?
+    `<p class="doc-p">Labor cost: ${val(s5.laborCost)||'—'} | Overhead: ${val(s5.overhead)||'—'} | Margin: ${val(s5.margin)||'—'} | Price: ${val(s5.svcPrice)||'—'} | Market rate: ${val(s5.marketRate)||'—'}</p>` : '';
+  const productPricingHtml = docTable(s5.productCosts, [{key:'component',label:'Cost Component'},{key:'amount',label:'Amount'}])
+    + ((val(s5.cogs)||val(s5.retailPrice)) ? `<p class="doc-p">COGS: ${val(s5.cogs)||'—'} | Markup: ${val(s5.markup)||'—'} | Retail price: ${val(s5.retailPrice)||'—'}</p>` : '');
+  return docBlock('Startup Costs', docTable(s4.startup, [{key:'item',label:'Item'},{key:'cost',label:'Cost'},{key:'type',label:'Type'}]))
+    + docBlock("Owner's Initial Cash Investment", docP(s4.startingCash))
+    + docBlock('Revenue Forecast by Product Line', docTable(s4.revenueForecast, [{key:'product',label:'Product/Service'},{key:'price',label:'Sales Price/Unit'},{key:'cogsPerUnit',label:'COGS/Unit'},{key:'unitsQ1',label:'Units Q1'},{key:'unitsQ2',label:'Units Q2'},{key:'unitsQ3',label:'Units Q3'},{key:'unitsQ4',label:'Units Q4'}]))
+    + docBlock('Income Statement Projection (Year 1)', docTable(s4.income, [{key:'item',label:'Line Item'},{key:'type',label:'Type'},{key:'q1',label:'Q1'},{key:'q2',label:'Q2'},{key:'q3',label:'Q3'},{key:'q4',label:'Q4'}]))
+    + docBlock('Cash Flow', docP(s4.cashflow))
+    + docBlock('Break-Even Analysis', breakEvenHtml)
+    + docBlock('Pricing Detail — Service-Based', svcPricingHtml)
+    + docBlock('Pricing Detail — Product-Based', productPricingHtml)
+    + docBlock('Pricing Strategy Notes', docP(s5.notes));
+}
+function genResumesSection(){
+  const list = (data.appendix && data.appendix.resumes) || [];
+  const withFiles = list.filter(r=>r.fileName);
+  if(!withFiles.length) return '';
+  let html = `<h3 class="doc-h3">Resumes &amp; Bios</h3>`;
+  withFiles.forEach(r=>{
+    const label = esc(r.label || 'Team Member');
+    if(r.mimeType && r.mimeType.startsWith('image/')){
+      html += `<p class="doc-p"><strong>${label}</strong></p><div id="resume-img-${r.id}" class="resume-img-slot"><span class="empty">Loading photo…</span></div>`;
+    } else {
+      html += `<p class="doc-p"><strong>${label}</strong> — ${esc(r.fileName)} (${humanSize(r.size)}). Attach this file separately when submitting your plan.</p>`;
+    }
+  });
+  return html;
+}
+function genOtherDocsSection(){
+  const list = (data.appendix && data.appendix.otherDocs) || [];
+  const withFiles = list.filter(r=>r.fileName);
+  if(!withFiles.length) return '';
+  let html = `<h3 class="doc-h3">Other Supporting Documents</h3>`;
+  withFiles.forEach(r=>{
+    const label = esc(r.label || 'Document');
+    if(r.mimeType && r.mimeType.startsWith('image/')){
+      html += `<p class="doc-p"><strong>${label}</strong></p><div id="doc-img-${r.id}" class="resume-img-slot"><span class="empty">Loading photo…</span></div>`;
+    } else {
+      html += `<p class="doc-p"><strong>${label}</strong> — ${esc(r.fileName)} (${humanSize(r.size)}). Attach this file separately when submitting your plan.</p>`;
+    }
+  });
+  return html;
+}
+function genFinancialStatementsBlock(){
+  if(!hasAnyFinancialData()) return '';
+  const incomeHtml = genComputedIncomeStatementDoc();
+  const cashFlowHtml = genComputedCashFlowDoc();
+  const balanceHtml = genComputedBalanceSheetDoc();
+  let html = `<h3 class="doc-h3">Projected Financial Statements</h3>
+  <p class="doc-p" style="font-size:12.5px;font-style:italic;color:#777;">These statements are calculated automatically from the numbers entered in the Financial Plan and Operations sections. They're simplified for planning purposes — they don't account for taxes, depreciation, or the timing of receivables and payables, and assume startup costs and funding occur at the start of Year 1. Revenue Forecast product lines let you set different unit sales for each quarter to reflect seasonality. Staffing cost is calculated from each role's hourly rate and hours/month, with the payroll burden rate applied to Full-Time/Part-Time wages only (not Contract); any monthly benefits entered per role are added on top at their full amount for everyone offered them. All of this is included as an Operating Expense every quarter. Loans with an interest rate and term are amortized monthly; their scheduled payments reduce projected cash and pay down the loan balance, and the interest portion reduces retained earnings. Loans without a rate/term are shown at their full original amount. Treat all of this as a directional projection, not a substitute for statements prepared by an accountant.</p>`;
+  if(incomeHtml) html += `<h4 style="font-size:14.5px;color:var(--d-heading);margin:16px 0 4px 0;">Income Statement</h4>${incomeHtml}`;
+  if(cashFlowHtml) html += `<h4 style="font-size:14.5px;color:var(--d-heading);margin:16px 0 4px 0;">Cash Flow Statement</h4>${cashFlowHtml}`;
+  if(balanceHtml) html += `<h4 style="font-size:14.5px;color:var(--d-heading);margin:16px 0 4px 0;">Balance Sheet (End of Year 1)</h4>${balanceHtml}`;
+  return html;
+}
+function genAppendix(){
+  const s6 = data.s6, s7 = data.s7;
+  const feasibilityDetails = (val(s7.demand)||val(s7.revenue)||val(s7.capital)) ?
+    `<p class="doc-p">${val(s7.demand)? '<strong>Demand evidence:</strong> '+val(s7.demand)+'<br>' : ''}${val(s7.revenue)? '<strong>Revenue sustainability:</strong> '+val(s7.revenue)+'<br>' : ''}${val(s7.capital)? '<strong>Capital &amp; readiness:</strong> '+val(s7.capital) : ''}</p>` : '';
+  const assessmentHtml = val(s7.assessment) ? `<p class="doc-p"><strong>Overall Feasibility Assessment:</strong> ${val(s7.assessment)}</p>` : '';
+  const riskBlock = docP(s7.risks) + feasibilityDetails + assessmentHtml;
+
+  return docBlock('Use of Funds', docTable(s6.useOfFunds, [{key:'category',label:'Category'},{key:'amount',label:'Amount'},{key:'notes',label:'Purpose / Notes'}]))
+    + genFinancialStatementsBlock()
+    + docBlock('Inventory Management', docP(s6.inventory))
+    + docBlock('Risk Analysis', riskBlock)
+    + genResumesSection()
+    + docBlock('Action Plan', docTable(s7.actions, [{key:'item',label:'Action Item'},{key:'owner',label:'Owner'},{key:'date',label:'Target Date'}]))
+    + genOtherDocsSection()
+    + `<h3 class="doc-h3">Supporting Documents Checklist</h3>
+  <div class="doc-check"><span class="box"></span>Resumes / bios of founding team</div>
+  <div class="doc-check"><span class="box"></span>Licenses, permits, or certifications</div>
+  <div class="doc-check"><span class="box"></span>Letters of intent or supplier agreements</div>
+  <div class="doc-check"><span class="box"></span>Market research data / survey results</div>
+  <div class="doc-check"><span class="box"></span>Detailed financial projections spreadsheet</div>
+  <div class="doc-check"><span class="box"></span>Marketing materials / brand assets</div>`;
+}
+function genBMCAppendixIntro(){
+  return docBlock('Business Model Canvas', bmcDocGrid());
+}
+
+const SECTION_DEFS = {
+  exec:       {title:'Executive Summary',            gen:genExecSummary},
+  company:    {title:'Company Description',          gen:genCompanyDescription},
+  market:     {title:'Market Analysis',               gen:genMarketAnalysis},
+  org:        {title:'Organization & Management',     gen:genOrgManagement},
+  product:    {title:'Products & Services',           gen:genProductService},
+  marketing:  {title:'Marketing & Sales Strategy',    gen:genMarketingSales},
+  funding:    {title:'Funding Request',               gen:genFundingRequest},
+  financials: {title:'Financial Plan',                gen:genFinancials},
+  appendix:   {title:'Appendix',                      gen:()=> genBMCAppendixIntro() + genAppendix()}
+};
+const FORMAT_ORDER = {
+  traditional: ['exec','company','market','org','product','marketing','funding','financials','appendix'],
+  investor:    ['exec','funding','company','market','org','product','marketing','financials','appendix'],
+};
+const FORMAT_META = {
+  traditional: {label:'Traditional Business Plan', desc:'The standard full plan structure — good for general planning and most audiences.'},
+  investor:    {label:'Investor / Loan-Ready',      desc:'Same detail, reordered so the funding ask and financials surface early for lenders.'},
+  lean:        {label:'Lean One-Page Plan',         desc:'A condensed snapshot of the whole business on a single scrollable page.'}
+};
+const THEME_META = {
+  classic: {label:'Classic Formal', dot:'#12355B'},
+  modern:  {label:'Modern Clean',   dot:'#0F8B8D'},
+  minimal: {label:'Minimalist',     dot:'#111111'}
+};
+
+function todayStr(){ const d = new Date(); return d.toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'}); }
+
+function renderCover(format){
+  const b = data.business;
+  const subtitle = format === 'lean' ? 'One-Page Business Plan' : 'Business Plan';
+  const dateStr = val(b.planDate) || todayStr();
+  return `<h1 class="doc-title">${val(b.name) || 'Your Business Name'}</h1>
+  <div class="doc-sub">${subtitle}</div>
+  <div class="doc-meta">${val(b.owner)? 'Prepared by '+val(b.owner)+' &middot; ' : ''}${esc(dateStr)}</div>
+  <hr class="gold">`;
+}
+function renderTOC(order){
+  let html = `<h2 class="doc-h2">Table of Contents</h2><ul class="doc-toc" id="docToc">`;
+  order.forEach((key,i)=>{
+    html += `<li data-section-key="${key}"><span>${i+1}. ${esc(SECTION_DEFS[key].title)}</span><span class="toc-page"></span></li>`;
+  });
+  html += `</ul>`;
+  return html;
+}
+function buildStructuredDoc(format){
+  const excluded = data.settings.excludedSections || [];
+  const candidateOrder = FORMAT_ORDER[format].filter(key => !excluded.includes(key));
+  // Compute each section's body first, then drop any that ended up with no actual content —
+  // an entirely empty top-level section (e.g. nothing filled in Funding Request) shouldn't
+  // print as an orphaned heading with nothing underneath.
+  const rendered = candidateOrder
+    .map(key => ({ key, def: SECTION_DEFS[key], body: SECTION_DEFS[key].gen() }))
+    .filter(item => item.body && item.body.trim().length > 0);
+  const finalOrder = rendered.map(r => r.key);
+
+  let html = renderCover(format);
+  html += renderTOC(finalOrder);
+  rendered.forEach((item,i)=>{
+    const sectionHtml = `<h2 class="doc-h2" data-section-key="${item.key}">${i+1}. ${esc(item.def.title)}</h2>${item.body}`;
+    html += item.key === 'appendix' ? `<div class="doc-appendix-wrap">${sectionHtml}</div>` : sectionHtml;
+  });
+  return html;
+}
+function leanBlock(title, contentHtml){
+  if(!contentHtml) return '';
+  return `<div class="lean-block"><h3 class="doc-h3">${esc(title)}</h3>${contentHtml}</div>`;
+}
+function buildLeanDoc(){
+  const s1=data.s1,s2=data.s2,s3=data.s3,s4=data.s4,s5=data.s5,s6=data.s6,ex=data.exec;
+  const teamLine = s6.roles.filter(r=>val(r.role)).map(r=>val(r.role)).join(', ');
+  const priceLine = val(s5.svcPrice) ? 'Service price: '+val(s5.svcPrice) : (val(s5.retailPrice)? 'Retail price: '+val(s5.retailPrice): null);
+  const finSnapshot = (val(s4.breakeven)||val(ex.highlight)) ?
+    [val(ex.highlight),val(s4.breakeven)?'Break-even: '+val(s4.breakeven):null].filter(Boolean).join(' &middot; ') : null;
+  const swotLine = [
+    val(s2.swot.strengths)?'S: '+val(s2.swot.strengths):null,
+    val(s2.swot.weaknesses)?'W: '+val(s2.swot.weaknesses):null,
+    val(s2.swot.opportunities)?'O: '+val(s2.swot.opportunities):null,
+    val(s2.swot.threats)?'T: '+val(s2.swot.threats):null
+  ].filter(Boolean).join('<br>');
+
+  let html = renderCover('lean');
+  html += WORD_EXPORT_MODE ? '' : `<div class="lean-grid">`;
+  html += leanBlock('Problem & Customer', docP(ex.problem || s2.needs));
+  html += leanBlock('Solution / Product', docP(s1.vpProduct ? (s1.vpProduct + (s1.vpBenefit? ' — '+s1.vpBenefit:'')) : ''));
+  html += leanBlock('Unique Value', docP(s1.vpDiff));
+  html += leanBlock('Target Market', docP(s2.tam || s2.size));
+  html += leanBlock('SWOT Snapshot', swotLine? `<p class="doc-p">${swotLine}</p>` : docP(''));
+  html += leanBlock('Revenue Model / Pricing', priceLine? `<p class="doc-p">${priceLine}</p>` : docP(''));
+  html += leanBlock('Marketing & Sales Channels', docP(s3.channels));
+  html += leanBlock('Team', teamLine? `<p class="doc-p">${esc(teamLine)}</p>` : docP(''));
+  html += leanBlock('Financial Snapshot', finSnapshot? `<p class="doc-p">${finSnapshot}</p>` : docP(''));
+  html += leanBlock('Funding Ask', docP(ex.fundingUse));
+  html += WORD_EXPORT_MODE ? '' : `</div>`;
+  return html;
+}
+function buildDoc(format){ return format === 'lean' ? buildLeanDoc() : buildStructuredDoc(format); }
+
+/* ============ PREVIEW VIEW ============ */
+function stylePicker(){
+  let formatSwatches = '';
+  Object.keys(FORMAT_META).forEach(key=>{
+    const active = data.settings.format === key ? 'active' : '';
+    formatSwatches += `<button type="button" class="swatch ${active}" aria-pressed="${!!active}" onclick="setFormat('${key}')">${esc(FORMAT_META[key].label)}</button>`;
+  });
+  let themeSwatches = '';
+  Object.keys(THEME_META).forEach(key=>{
+    const active = data.settings.theme === key ? 'active' : '';
+    themeSwatches += `<button type="button" class="swatch ${active}" aria-pressed="${!!active}" onclick="setTheme('${key}')"><span class="dot" style="display:block;background:${THEME_META[key].dot};"></span>${esc(THEME_META[key].label)}</button>`;
+  });
+
+  let sectionsGroup;
+  if(data.settings.format === 'lean'){
+    sectionsGroup = `<div class="picker-group">
+      <span class="picker-label">Sections to Include</span>
+      <div class="picker-desc">Not available in the Lean One-Page format — it's a fixed single-page snapshot.</div>
+    </div>`;
+  } else {
+    const order = FORMAT_ORDER[data.settings.format];
+    const excluded = data.settings.excludedSections || [];
+    let checkboxes = '';
+    order.forEach(key=>{
+      const checked = excluded.includes(key) ? '' : 'checked';
+      checkboxes += `<label class="section-toggle"><input type="checkbox" ${checked} onchange="toggleSectionExclusion('${key}')"> ${esc(SECTION_DEFS[key].title)}</label>`;
+    });
+    sectionsGroup = `<div class="picker-group">
+      <span class="picker-label">Sections to Include</span>
+      <div class="section-toggle-list">${checkboxes}</div>
+      <div class="picker-desc">Uncheck a section to leave it out of the printed plan, PDF, and Word doc.</div>
+    </div>`;
+  }
+
+  return `<div class="style-picker">
+    <div class="picker-group">
+      <span class="picker-label">Plan Format</span>
+      <div class="swatch-row">${formatSwatches}</div>
+      <div class="picker-desc">${esc(FORMAT_META[data.settings.format].desc)}</div>
+    </div>
+    <div class="picker-group">
+      <span class="picker-label">Visual Style</span>
+      <div class="swatch-row">${themeSwatches}</div>
+    </div>
+    ${sectionsGroup}
+  </div>`;
+}
+function setFormat(f){ data.settings.format = f; scheduleSave(); renderMain(); }
+function setTheme(t){ data.settings.theme = t; scheduleSave(); renderMain(); }
+function toggleSectionExclusion(key){
+  if(!data.settings.excludedSections) data.settings.excludedSections = [];
+  const idx = data.settings.excludedSections.indexOf(key);
+  if(idx === -1) data.settings.excludedSections.push(key);
+  else data.settings.excludedSections.splice(idx,1);
+  scheduleSave();
+  renderMain();
+}
+
+/* ============ WORD DOCUMENT EXPORT ============ */
+async function buildWordBodyHtml(){
+  const format = data.settings.format;
+  WORD_EXPORT_MODE = true;
+  let bodyHtml;
+  try{ bodyHtml = buildDoc(format); }
+  finally{ WORD_EXPORT_MODE = false; }
+
+  // Bake uploaded photos directly into the HTML string as data URLs (no live DOM to hydrate into for a file export)
+  async function bakeImages(list, loaderFn, idPrefix){
+    for(const r of list){
+      if(r.fileName && r.mimeType && r.mimeType.startsWith('image/')){
+        const dataUrl = await loaderFn(r.id);
+        if(dataUrl){
+          const placeholder = new RegExp('<div id="'+idPrefix+r.id+'"[^>]*>[\\s\\S]*?<\\/div>');
+          bodyHtml = bodyHtml.replace(placeholder, `<img src="${dataUrl}" style="max-width:220px;">`);
+        }
+      }
+    }
+  }
+  await bakeImages((data.appendix && data.appendix.resumes) || [], loadResumeFile, 'resume-img-');
+  await bakeImages((data.appendix && data.appendix.otherDocs) || [], loadDocFile, 'doc-img-');
+  return bodyHtml;
+}
+async function exportAsWordDoc(){
+  const bodyHtml = await buildWordBodyHtml();
+  const b = data.business;
+  const docStyles = `
+    body{font-family:Georgia,'Times New Roman',serif;color:#222;font-size:12pt;}
+    h1{color:#12355B;text-align:center;font-size:22pt;margin-bottom:2pt;}
+    .doc-sub{text-align:center;color:#B3121F;font-style:italic;font-size:12pt;margin-bottom:2pt;}
+    .doc-meta{text-align:center;font-size:10pt;color:#555;font-family:Arial,sans-serif;margin-bottom:18pt;}
+    hr{border:none;border-top:2pt solid #B3121F;margin:0 0 18pt 0;}
+    h2{color:#12355B;border-bottom:1.5pt solid #B3121F;font-size:16pt;margin-top:22pt;padding-bottom:3pt;}
+    h3{color:#12355B;font-size:13pt;margin-top:12pt;margin-bottom:4pt;}
+    p{font-size:11pt;line-height:1.5;margin:0 0 8pt 0;}
+    table{border-collapse:collapse;width:100%;margin:8pt 0 14pt 0;}
+    table td, table th{border:1px solid #999;padding:6pt;font-size:10pt;text-align:left;}
+    th{background:#12355B;color:#fff;font-family:Arial,sans-serif;}
+    .empty{color:#888;font-style:italic;}
+    .doc-toc li{list-style:none;border-bottom:1px dotted #ccc;padding:3pt 0;font-family:Arial,sans-serif;font-size:11pt;}
+    .doc-toc{padding:0;margin:0 0 10pt 0;}
+    .doc-check .box{display:inline-block;width:10pt;height:10pt;border:1pt solid #12355B;margin-right:6pt;}
+    .lean-block{margin-bottom:14pt;}
+  `;
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+  <head><meta charset="utf-8"><title>${esc(b.name||'Business Plan')}</title>
+  <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+  <style>${docStyles}</style>
+  </head><body>${bodyHtml}</body></html>`;
+
+  const blob = new Blob(['\ufeff', html], {type:'application/msword'});
+  const url = URL.createObjectURL(blob);
+  const nameSafe = (b.name || 'business-plan').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-+|-+$)/g,'') || 'draft';
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'business-plan-'+nameSafe+'.doc';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 3000);
+}
+
+function viewPreview(){
+  const format = data.settings.format, theme = data.settings.theme;
+  const docHtml = `<div class="doc theme-${theme}" id="docContent">${buildDoc(format)}</div>`;
+  return `<div class="topbar" style="margin-bottom:6px;">
+    <h2 class="section-title" style="margin:0;">Preview &amp; Print</h2>
+    <div><button class="btn btn-outline" onclick="goTo('exec')">← Back to Editing</button>
+    <button class="btn btn-outline" onclick="exportAsWordDoc()">Download as Word Doc</button>
+    <button class="btn btn-gold" onclick="window.print()">Print / Save as PDF</button></div>
+  </div>
+  ${stylePicker()}
+  <div class="preview-wrap">${docHtml}</div>
+  <div class="cta"><strong>Ready for feedback?</strong> An SBDC advisor can review your plan with you before you share it with a lender or investor, at no cost. <a href="https://clients.ohiosbdc.ohio.gov/reg.aspx?mode=counsel&amp;center=17047&amp;subloc=0">Request advising</a> or call <a href="tel:+19372109460">937-210-9460</a>.</div>`;
+}
+
+/* ============ RENDER ORCHESTRATION ============ */
+const PRINT_CONTENT_WIDTH_PX = 672; // 7in content width at 96dpi (8.5in letter - 0.75in side margins)
+const PRINT_PAGE_HEIGHT_PX = 902;   // 9.4in content height at 96dpi (11in letter - 0.75in top - 0.85in bottom margins)
+
+function updateTocPageEstimates(){
+  const source = document.getElementById('docContent');
+  if(!source) return;
+  const toc = source.querySelector('#docToc');
+  if(!toc) return; // lean format has no TOC — nothing to estimate
+
+  const clone = source.cloneNode(true);
+  clone.style.cssText = 'position:absolute;visibility:hidden;left:-9999px;top:0;'
+    + 'width:'+PRINT_CONTENT_WIDTH_PX+'px;max-width:'+PRINT_CONTENT_WIDTH_PX+'px;'
+    + 'padding:0;margin:0;box-shadow:none;';
+  document.body.appendChild(clone);
+
+  const headings = Array.from(clone.querySelectorAll('h2.doc-h2[data-section-key]'));
+  const pageForOffset = top => Math.floor(top / PRINT_PAGE_HEIGHT_PX) + 1;
+
+  headings.forEach(h=>{
+    const key = h.getAttribute('data-section-key');
+    const tocLi = toc.querySelector('li[data-section-key="'+key+'"]');
+    if(!tocLi) return;
+    const span = tocLi.querySelector('.toc-page');
+    if(!span) return;
+    span.textContent = key === 'appendix' ? '' : String(pageForOffset(h.offsetTop));
+  });
+
+  document.body.removeChild(clone);
+}
+
+function renderMain(){
+  const main = document.getElementById('main');
+  let bodyHtml = '';
+  if(currentSection === 'preview'){
+    bodyHtml = viewPreview();
+  } else {
+    bodyHtml = `<div class="topbar"><span></span><span class="save-indicator" id="saveIndicator">&#10003; Saved</span></div>` + ({
+      instructions: viewInstructions, business: viewBusiness, s1: viewS1, s2: viewS2, s3: viewS3, s4: viewS4,
+      s5: viewS5, s6: viewS6, s7: viewS7, exec: viewExec
+    }[currentSection])();
+  }
+  main.innerHTML = bodyHtml;
+  if(currentSection === 'preview'){ hydrateResumeImages(); updateTocPageEstimates(); }
+  if(currentSection === 's4'){ calcBreakEven(); calcRevenueForecast(); }
+  if(currentSection === 's6'){ calcLoanSchedules(); calcPayroll(); }
+}
+function renderAll(){ renderRail(); renderMain(); }
+
+async function hydrateImageSlots(list, loaderFn, idPrefix){
+  for(const r of list){
+    if(r.fileName && r.mimeType && r.mimeType.startsWith('image/')){
+      const dataUrl = await loaderFn(r.id);
+      const slot = document.getElementById(idPrefix+r.id);
+      if(slot){
+        slot.innerHTML = dataUrl
+          ? `<img src="${dataUrl}" alt="${esc(r.label||'Photo')}" style="max-width:220px;border-radius:6px;border:1px solid #ddd;display:block;">`
+          : `<span class="empty">Could not load image.</span>`;
+      }
+    }
+  }
+}
+async function hydrateResumeImages(){
+  await hydrateImageSlots((data.appendix && data.appendix.resumes) || [], loadResumeFile, 'resume-img-');
+  await hydrateImageSlots((data.appendix && data.appendix.otherDocs) || [], loadDocFile, 'doc-img-');
+}
+
+loadData();
+</script>
+</body>
+</html>
