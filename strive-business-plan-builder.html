@@ -424,7 +424,7 @@ function defaultData(){
         expenses:[{item:'Rent',amount:''},{item:'Insurance',amount:''},{item:'Accounting / bookkeeping',amount:''},{item:'Marketing & advertising',amount:''},
                   {item:'Software subscriptions',amount:''},{item:'Utilities',amount:''},{item:'Repairs & maintenance',amount:''}],
         ownerDraw:'', inflation:'3',
-        startup:[{item:'',cost:'',type:''}], startingCash:'', deprYears:'5',
+        startup:[{item:'',cost:'',type:''}], startingCash:'', deprYears:'5', invDays:'0',
         scenario:{bestRev:'20', bestExp:'-5', worstRev:'-25', worstExp:'10'},
         cashflow:'', migratedNotice:false},
     s5:{laborCost:'',overhead:'',margin:'',svcPrice:'',marketRate:'',
@@ -615,7 +615,7 @@ function sumField(rows, key){
 }
 const sumArr = a => a.reduce((x,y)=>x+y,0);
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const STARTUP_TYPES = ['Equipment / Fixed Asset','Prepaid / Deposit','Other Startup Expense','Working Capital Reserve'];
+const STARTUP_TYPES = ['Equipment / Fixed Asset','Opening Inventory','Prepaid / Deposit','Other Startup Expense','Working Capital Reserve'];
 const SEASON_PRESETS = {
   flat:    {label:'Even all year',            v:[1,1,1,1,1,1,1,1,1,1,1,1]},
   holiday: {label:'Holiday peak (retail)',    v:[0.8,0.8,0.9,0.95,1,1,0.95,0.95,1,1.05,1.2,1.4]},
@@ -738,15 +738,16 @@ function runProForma(opts){
   const payrollTaxes = Z().map((_,m)=>taxSS[m]+taxMed[m]+taxFUTA[m]+taxSUTA[m]+taxWC[m]);
 
   // ---- startup costs & funding ----
-  const st = {equip:0, prepaid:0, expense:0, wc:0};
+  const st = {equip:0, inv:0, prepaid:0, expense:0, wc:0};
   (f.startup||[]).forEach(r=>{
     const c = N(r.cost); if(!c) return;
     if(r.type==='Equipment / Fixed Asset') st.equip+=c;
+    else if(r.type==='Opening Inventory') st.inv+=c;
     else if(r.type==='Prepaid / Deposit') st.prepaid+=c;
     else if(r.type==='Working Capital Reserve') st.wc+=c;
     else st.expense+=c;
   });
-  st.spent = st.equip+st.prepaid+st.expense;
+  st.spent = st.equip+st.inv+st.prepaid+st.expense;
   st.total = st.spent+st.wc;
   const deprYears = Math.max(1, N(f.deprYears,5));
   const depreciation = Z().map((_,m)=> m < deprYears*12 ? st.equip/(deprYears*12) : 0);
@@ -766,6 +767,17 @@ function runProForma(opts){
   fund.total = fund.owner+fund.loans+fund.equity+fund.grants;
   const interest = Z(), principal = Z(), loanBal = Z();
   for(let m=0;m<M;m++){ loans.forEach(l=>{ interest[m]+=l.interest[m]; principal[m]+=l.principal[m]; loanBal[m]+=l.balance[m]; }); }
+
+  // ---- inventory: stock on hand = days of direct costs; purchases = cost of goods sold + change in inventory ----
+  const invDays = Math.max(0, N(f.invDays,0));
+  const inventory = Z(), purchases = Z();
+  let invPrev = st.inv;
+  for(let m=0;m<M;m++){
+    const target = cogs[m]*invDays/30;
+    const inv = Math.max(target, invPrev - cogs[m]);
+    purchases[m] = cogs[m] + inv - invPrev;
+    inventory[m] = inv; invPrev = inv;
+  }
 
   // ---- income statement ----
   const fixedTotal = Z(), opexCash = Z(), opex = Z(), gross = Z(), opInc = Z(), net = Z(), startupExp = Z();
@@ -787,7 +799,7 @@ function runProForma(opts){
     const fundingIn = m===0 ? fund.total : 0;
     const startupOut = m===0 ? st.spent : 0;
     cashIn[m] = collections[m]+fundingIn;
-    cashOut[m] = startupOut + cogs[m] + varFees[m] + opexCash[m] + interest[m] + principal[m];
+    cashOut[m] = startupOut + purchases[m] + varFees[m] + opexCash[m] + interest[m] + principal[m];
     netCash[m] = cashIn[m]-cashOut[m];
     end[m] = begin[m]+netCash[m];
   }
@@ -797,17 +809,17 @@ function runProForma(opts){
   const bsAt = (m) => {
     if(m < 0){
       const cash = fund.total - st.spent;
-      const assets = cash + st.prepaid + st.equip;
+      const assets = cash + st.inv + st.prepaid + st.equip;
       const retained = -st.expense;
-      return {label:'Opening (Day 1)', cash, ar:0, prepaid:st.prepaid, equipCost:st.equip, accumDep:0, equipNet:st.equip,
+      return {label:'Opening (Day 1)', cash, ar:0, inv:st.inv, prepaid:st.prepaid, equipCost:st.equip, accumDep:0, equipNet:st.equip,
         assets, loans:fund.loans, contributions, retained, equity:contributions+retained, liabEq:fund.loans+contributions+retained};
     }
     const cumRev = sumArr(rev.slice(0,m+1)), cumCol = sumArr(collections.slice(0,m+1));
     const accumDep = sumArr(depreciation.slice(0,m+1));
     const cash = end[m], ar = cumRev-cumCol, equipNet = st.equip-accumDep;
-    const assets = cash+ar+st.prepaid+equipNet;
+    const assets = cash+ar+inventory[m]+st.prepaid+equipNet;
     const retained = sumArr(net.slice(0,m+1));
-    return {label:'End of Year '+(Math.floor(m/12)+1), cash, ar, prepaid:st.prepaid, equipCost:st.equip, accumDep, equipNet,
+    return {label:'End of Year '+(Math.floor(m/12)+1), cash, ar, inv:inventory[m], prepaid:st.prepaid, equipCost:st.equip, accumDep, equipNet,
       assets, loans:loanBal[m], contributions, retained, equity:contributions+retained, liabEq:loanBal[m]+contributions+retained};
   };
   const balance = [bsAt(-1), bsAt(11), bsAt(23), bsAt(35)];
@@ -817,7 +829,8 @@ function runProForma(opts){
   const years = [0,1,2].map(y=>({
     revenue:yr(rev,y), units:yr(qty,y), cogs:yr(cogs,y), varFees:yr(varFees,y), gross:yr(gross,y),
     opex:yr(opex,y), opexCash:yr(opexCash,y), depreciation:yr(depreciation,y), interest:yr(interest,y), net:yr(net,y),
-    principal:yr(principal,y), collections:yr(collections,y), endCash:end[y*12+11]
+    principal:yr(principal,y), collections:yr(collections,y), endCash:end[y*12+11],
+    purchases:yr(purchases,y), endInventory:inventory[y*12+11]
   }));
   let lowCash = Infinity, lowIdx = 0;
   end.forEach((v,i)=>{ if(v<lowCash){ lowCash=v; lowIdx=i; } });
@@ -825,7 +838,7 @@ function runProForma(opts){
 
   return {M, start, lines, rev, cogs, qty, varFees, varPct, expenses, ownerDraw, fixedTotal,
     wages, taxSS, taxMed, taxFUTA, taxSUTA, taxWC, payrollTaxes, benefits, contractors, roles,
-    st, depreciation, deprYears, fund, loans, interest, principal, loanBal,
+    st, inventory, purchases, invDays, depreciation, deprYears, fund, loans, interest, principal, loanBal,
     opexCash, opex, startupExp, gross, opInc, net, collections, begin, cashIn, cashOut, netCash, end,
     balance, years, lowCash, lowIdx, firstProfit, collectTotal:c1+c2+c3,
     taxRates:{ss,med,futa,futaBase,suta,sutaBase,wc}};
@@ -1770,7 +1783,7 @@ function cashRows(pf, pick, firstCol){
   eqIn[0] = pf.fund.owner+pf.fund.equity+pf.fund.grants; loanIn[0] = pf.fund.loans; stOut[0] = pf.st.spent;
   for(let m=0;m<pf.M;m++){
     people[m] = pf.wages[m]+pf.payrollTaxes[m]+pf.benefits[m]+pf.contractors[m];
-    direct[m] = pf.cogs[m]+pf.varFees[m];
+    direct[m] = pf.purchases[m]+pf.varFees[m];
     other[m] = pf.fixedTotal[m];
   }
   const R = [];
@@ -1782,7 +1795,7 @@ function cashRows(pf, pick, firstCol){
   R.push({label:'Total Cash In', vals:pick(pf.cashIn), cls:'total'});
   R.push({label:'Cash Out', cls:'head'});
   if(anyNZ(stOut)) R.push({label:'Startup purchases', vals:pick(stOut), cls:'indent'});
-  R.push({label:'Direct costs & variable fees', vals:pick(direct), cls:'indent'});
+  R.push({label: anyNZ(pf.inventory) ? 'Inventory & direct cost purchases, variable fees' : 'Direct costs & variable fees', vals:pick(direct), cls:'indent'});
   if(anyNZ(people)) R.push({label:'Payroll, taxes, benefits & contractors', vals:pick(people), cls:'indent'});
   if(anyNZ(pf.ownerDraw)) R.push({label:'Owner draw', vals:pick(pf.ownerDraw), cls:'indent'});
   R.push({label:'Other operating expenses', vals:pick(other), cls:'indent'});
@@ -1847,6 +1860,7 @@ function stmtBalance(pf){
     {label:'Assets', cls:'head'},
     {label:'Cash', vals:col('cash'), cls:'indent'},
     anyNZ(col('ar')) ? {label:'Accounts receivable (sales not yet collected)', vals:col('ar'), cls:'indent'} : null,
+    anyNZ(col('inv')) ? {label:'Inventory', vals:col('inv'), cls:'indent'} : null,
     pf.st.prepaid ? {label:'Prepaid expenses & deposits', vals:col('prepaid'), cls:'indent'} : null,
     pf.st.equip ? {label:'Equipment & fixed assets (cost)', vals:col('equipCost'), cls:'indent'} : null,
     pf.st.equip ? {label:'Less: accumulated depreciation', vals:col('accumDep').map(v=>-v), cls:'indent'} : null,
@@ -2044,6 +2058,9 @@ function viewS4(){
   <div class="calc-box" id="finLinesBox"></div>
   <div class="row2">${numField('Sales growth per year (%)','s4.growth','more sales each year; e.g. 10')}${numField('Price increase per year (%)','s4.priceIncrease','prices and direct costs both rise by this; 0 if none')}</div>
 
+  <div class="row2">${numField('Inventory on hand (days of direct costs)','s4.invDays','0 if you buy materials only when you make a sale; 30 means about one month of stock')}<div></div></div>
+  <div class="calc-box" id="finInvBox"></div>
+
   <h3 class="sub">3. Busy and slow months (seasonality)</h3>
   <div class="callout">1.00 is an average month. 1.25 means 25% busier than average; 0.80 means 20% slower. Pick a pattern, then adjust any month. The 12 numbers should average about 1.00.</div>
   ${seasonGrid()}
@@ -2067,7 +2084,7 @@ function viewS4(){
   <div class="calc-box" id="finExpBox"></div>
 
   <h3 class="sub">7. Startup costs and your own investment</h3>
-  <div class="callout">Pick a <b>Type</b> for each item. <b>Equipment</b> is depreciated over its useful life. <b>Prepaid / Deposit</b> covers things like a security deposit or insurance paid in advance. <b>Other Startup Expense</b> covers training, licenses and supplies. A <b>Working Capital Reserve</b> is cash you keep in the bank as a cushion; it isn't spent on Day 1.</div>
+  <div class="callout">Pick a <b>Type</b> for each item. <b>Equipment</b> is depreciated over its useful life. <b>Opening Inventory</b> is stock you buy before you open; it stays an asset on your balance sheet until it's sold. <b>Prepaid / Deposit</b> covers things like a security deposit or insurance paid in advance. <b>Other Startup Expense</b> covers training, licenses and supplies. A <b>Working Capital Reserve</b> is cash you keep in the bank as a cushion; it isn't spent on Day 1.</div>
   ${dynTable('s4','startup',[{key:'item',label:'Item',onExtra:'refreshFin();'},{key:'cost',label:'Cost ($)',onExtra:'refreshFin();'},{key:'type',label:'Type',type:'select',options:STARTUP_TYPES}],'Add startup item')}
   <div class="row2">${numField("Owner's cash investment ($)",'s4.startingCash',"your own money going into the business; loans and investors go in Step 6")}${numField('Equipment useful life (years)','s4.deprYears','for depreciation; 5 is common')}</div>
   <div class="calc-box" id="finStartupBox"></div>
@@ -2082,10 +2099,15 @@ function viewS4(){
 
 /* live summaries on Steps 4 and 6 */
 function refreshFin(){
-  const ids = ['finLinesBox','seasonBox','collectBox','finExpBox','finStartupBox','payrollCalc','loanCalc'];
+  const ids = ['finLinesBox','finInvBox','seasonBox','collectBox','finExpBox','finStartupBox','payrollCalc','loanCalc'];
   if(!ids.some(id=>document.getElementById(id))) return;
   const pf = runProForma();
   const put = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
+  // inventory
+  if(pf.invDays>0 || pf.st.inv>0){
+    const avgInv = sumArr(pf.inventory.slice(0,12))/12, cogsY1 = sumArr(pf.cogs.slice(0,12))/12;
+    put('finInvBox', `<div class="calc-result"><strong>Inventory:</strong> about ${fmtMoney(avgInv)} on hand in an average Year 1 month (${fmtNum(pf.invDays,0)} days of the ${fmtMoney(cogsY1)} in direct costs you sell each month)${pf.st.inv?`, starting from ${fmtMoney(pf.st.inv)} of opening inventory`:''}. Ending inventory: Year 1 ${fmtMoney(pf.years[0].endInventory)} · Year 2 ${fmtMoney(pf.years[1].endInventory)} · Year 3 ${fmtMoney(pf.years[2].endInventory)}. Buying more stock as sales grow uses cash, so it shows on your Cash Flow, and the stock shows as an asset on your Balance Sheet.</div>`);
+  } else put('finInvBox', `<p class="calc-placeholder">Enter the days of inventory you keep on hand (or add Opening Inventory in startup costs) to include stock in your cash flow and balance sheet.</p>`);
   // revenue lines
   if(pf.lines.length){
     const y1 = pf.years[0];
@@ -2105,7 +2127,7 @@ function refreshFin(){
   const fixedY1 = sumArr(pf.fixedTotal.slice(0,12))/12, draw = N(data.s4.ownerDraw);
   put('finExpBox', `<div class="calc-result"><strong>Monthly operating expenses:</strong> ${fmtMoney(fixedY1)}${draw?` + ${fmtMoney(draw)} owner draw`:''}. Team costs and loan payments from Step 6 are added in your projections.</div>`);
   if(pf.st.total || pf.fund.total){
-    put('finStartupBox', `<div class="calc-result"><strong>Startup costs:</strong> ${fmtMoney(pf.st.total)} total (equipment ${fmtMoney(pf.st.equip)}, prepaid ${fmtMoney(pf.st.prepaid)}, other startup expenses ${fmtMoney(pf.st.expense)}, working capital reserve ${fmtMoney(pf.st.wc)}).<br>
+    put('finStartupBox', `<div class="calc-result"><strong>Startup costs:</strong> ${fmtMoney(pf.st.total)} total (equipment ${fmtMoney(pf.st.equip)}${pf.st.inv?`, opening inventory ${fmtMoney(pf.st.inv)}`:''}, prepaid ${fmtMoney(pf.st.prepaid)}, other startup expenses ${fmtMoney(pf.st.expense)}, working capital reserve ${fmtMoney(pf.st.wc)}).<br>
       <strong>Funding:</strong> ${fmtMoney(pf.fund.total)} (your cash ${fmtMoney(pf.fund.owner)}${pf.fund.loans?`, loans ${fmtMoney(pf.fund.loans)}`:''}${pf.fund.equity?`, investors ${fmtMoney(pf.fund.equity)}`:''}${pf.fund.grants?`, grants ${fmtMoney(pf.fund.grants)}`:''}).
       ${Math.abs(pf.fund.total-pf.st.total)<1?'✓ Funding matches startup costs.': pf.fund.total>pf.st.total? `${fmtMoney(pf.fund.total-pf.st.total)} more funding than startup costs; it stays in the bank as cash.` : `<span style="color:#9C3B3B;font-weight:700;">You're ${fmtMoney(pf.st.total-pf.fund.total)} short of your startup costs.</span> Add funding in Step 6 or lower costs.`}</div>`);
   } else put('finStartupBox', `<p class="calc-placeholder">Add startup items and your investment to compare what you need with what you have.</p>`);
@@ -2241,13 +2263,14 @@ function assumptionsHtml(pf){
     `Sales for each product or service = average monthly sales × seasonality for that month × ${fmtPct(P(f.growth),1)} growth per year. Prices and direct costs rise ${fmtPct(P(f.priceIncrease),1)} per year.`,
     `Cash from sales is collected ${N(f.collect30,100)}% the same month, ${N(f.collect60)}% the next month and ${N(f.collect90)}% two months later; the rest shows as accounts receivable.`,
     `Card fees and other variable costs are ${fmtPct(pf.varPct,1)} of sales.`,
+    (pf.invDays>0||pf.st.inv>0) && `Inventory on hand is kept at ${fmtNum(pf.invDays,0)} days of direct costs${pf.st.inv?`, starting from ${fmtMoney(pf.st.inv)} of opening inventory`:''}. Direct costs are expensed when sold; inventory purchases are paid in cash the month they're made.`,
     `Operating expenses, owner draw and wages rise ${fmtPct(P(f.inflation),1)} per year.`,
     `Employer payroll taxes: Social Security ${fmtPct(tr.ss,2)}, Medicare ${fmtPct(tr.med,2)} and workers' comp ${fmtPct(tr.wc,2)} of wages; FUTA ${fmtPct(tr.futa,2)} on the first ${fmtMoney(tr.futaBase)} and SUTA ${fmtPct(tr.suta,2)} on the first ${fmtMoney(tr.sutaBase)} each employee earns each forecast year. Contractors have no payroll taxes.`,
-    `Startup purchases and all funding happen in month 1. Equipment is depreciated evenly over ${pf.deprYears} years. "Other startup expenses" are expensed in month 1. A working capital reserve stays in the bank as cash.`,
+    `Startup purchases and all funding happen in month 1. Equipment is depreciated evenly over ${pf.deprYears} years. Opening inventory is an asset until sold. "Other startup expenses" are expensed in month 1. A working capital reserve stays in the bank as cash.`,
     `Loans are repaid in equal monthly payments starting in month 1: interest is an expense on the Income Statement; principal reduces cash and the loan balance.`,
     `Net income is before income taxes. Grants are treated as owner's equity. These are planning estimates, not statements prepared by an accountant.`
   ];
-  return `<ul class="info-list">${items.map(i=>`<li>${i}</li>`).join('')}</ul>`;
+  return `<ul class="info-list">${items.filter(Boolean).map(i=>`<li>${i}</li>`).join('')}</ul>`;
 }
 
 /* ============ PLAN DOCUMENT — Financial Plan section + Appendix statements ============ */
@@ -2459,9 +2482,11 @@ function genCompanyDescription(){
 }
 function genMarketAnalysis(){
   const s2 = data.s2;
-  return docBlock('Target Customer Profile', docP(s2.demo)+docP(s2.needs))
+  return docBlock('Target Customer Profile', docP(s2.demo))
+    + docBlock('Customer Needs, Goals &amp; Pain Points', docP(s2.needs))
     + docBlock('Current Alternatives', docP(s2.alt))
-    + docBlock('Market Size', docP(s2.size)+docP(s2.tam))
+    + docBlock('Addressable Prospects', docP(s2.size))
+    + docBlock('Market Size (Bottom-Up)', docP(s2.tam))
     + docBlock('Market Trends', docP(s2.trends))
     + docBlock('Competitive Analysis', docTable(s2.competitors, [{key:'name',label:'Competitor'},{key:'strengths',label:'Strengths'},{key:'weaknesses',label:'Weaknesses'},{key:'diff',label:'Differentiation'}]))
     + docBlock('SWOT Analysis', swotDocGrid())
