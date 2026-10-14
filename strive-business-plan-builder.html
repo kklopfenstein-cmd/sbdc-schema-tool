@@ -1581,9 +1581,9 @@ function viewS2(){
   ${field('Customer Profile — Demographics','s2.demo',{textarea:true,rows:2,hint:'age, location, income, occupation, etc.'})}
   ${field('Customer Profile — Needs, Goals & Pain Points','s2.needs',{textarea:true,rows:2})}
   ${field('Where does this customer currently go to solve this problem?','s2.alt',{textarea:true,rows:2})}
-  ${field('Estimated number of potential customers','s2.size')}
+  ${field('Addressable prospects — how many customers can you realistically reach?','s2.size',{hint:'count them from a source you can cite, such as Census data'})}
   <h3 class="sub">Market Analysis</h3>
-  ${field('Total addressable market — how big is the market?','s2.tam',{textarea:true,rows:2})}
+  ${field('Market size — built from the bottom up','s2.tam',{textarea:true,rows:6,hint:'addressable prospects × conversion rate × average transaction value, then check it against your capacity'})}
   ${field('Key market trends','s2.trends',{textarea:true,rows:2,hint:'growth, decline, regulation, technology'})}
   <h3 class="sub">Competitive Intelligence</h3>
   ${dynTable('s2','competitors',[
