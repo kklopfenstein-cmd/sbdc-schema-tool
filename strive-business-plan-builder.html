@@ -89,6 +89,12 @@
 
   .field{margin-bottom:18px;}
   .field label{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+  .fmt-bar{display:flex;align-items:center;gap:4px;margin:0 0 4px 0;}
+  .fmt-btn{width:28px;height:26px;border:1px solid #C9D2DE;background:#fff;border-radius:5px;cursor:pointer;font-size:13.5px;color:var(--navy);padding:0;line-height:1;}
+  .fmt-btn:hover{background:#EEF2F7;border-color:var(--navy);}
+  .fmt-btn:focus-visible{outline:2px solid var(--gold);outline-offset:1px;}
+  .fmt-tip{font-size:11.5px;color:var(--muted);margin-left:6px;}
+  @media print{ .fmt-bar{display:none;} }
   .field .hint{font-weight:400;color:var(--muted);font-style:italic;font-size:12.5px;}
   input[type=text], textarea, select{ width:100%;font-family:var(--sans);font-size:14px;color:var(--ink);
     border:1px solid var(--border);border-radius:7px;padding:10px 12px;background:#fff;resize:vertical; }
@@ -199,6 +205,11 @@
   .doc table th{background:var(--d-table-head-bg);color:var(--d-table-head-color);padding:7px 9px;text-align:left;font-family:var(--sans);font-size:11.5px;}
   .doc.theme-minimal table th{border-bottom:1.5px solid #111;}
   .doc table td{padding:7px 9px;border-bottom:1px solid #ddd;}
+  .doc sup.fn-ref{font-size:0.68em;line-height:0;vertical-align:super;margin-left:1px;color:var(--d-accent);font-weight:700;}
+  .doc ol.doc-notes{font-size:12.5px;line-height:1.55;padding-left:24px;margin:6px 0 18px 0;}
+  .doc ol.doc-notes li{margin-bottom:7px;}
+  .doc ol.doc-notes ul{margin:4px 0 0 0;padding-left:18px;}
+  .doc tr.doc-total td{border-top:2px solid var(--d-heading);background:#F4F6FA;}
   .doc .bmc-doc{ display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:auto auto auto;
     grid-template-areas:"partners activities value relationships segments" "partners resources value channels segments" "cost cost cost revenue revenue";
     gap:1px;background:#ddd;border:1px solid #ddd;margin:12px 0 20px 0; }
@@ -1272,7 +1283,7 @@ function field(labelText, path, opts={}){
   const id = fldId(path);
   const extra = opts.onExtra || '';
   const tag = isTextarea
-    ? `<textarea id="${id}" rows="${opts.rows||3}" oninput="setPath(data,'${path}',this.value);scheduleSave();updateNode('${path.split('.')[0]}');${extra}">${esc(value)}</textarea>`
+    ? fmtBar(id) + `<textarea id="${id}" rows="${opts.rows||3}" oninput="setPath(data,'${path}',this.value);scheduleSave();updateNode('${path.split('.')[0]}');${extra}">${esc(value)}</textarea>`
     : `<input id="${id}" type="text" value="${esc(value)}" oninput="setPath(data,'${path}',this.value);scheduleSave();updateNode('${path.split('.')[0]}');${extra}">`;
   return `<div class="field"><label for="${id}">${esc(labelText)}${hint}</label>${tag}</div>`;
 }
@@ -1521,6 +1532,8 @@ function viewInstructions(){
     <li>You don't have to go in order — click any step to jump to it.</li>
     <li>A step's circle turns into a checkmark once you've entered anything in it, so you can see your progress at a glance.</li>
     <li><b>Executive Summary</b> comes last on purpose. It's a snapshot of your whole plan, so it's easiest to write after everything else.</li>
+    <li><b>Bold, italic and underline:</b> select words in any large text box and click <b>B</b>, <i>I</i> or <u>U</u> above it (or press Ctrl+B, Ctrl+I or Ctrl+U; ⌘ on a Mac). The box shows marks like **bold**, *italic* and __underline__; your plan preview, PDF and Word download show the formatting.</li>
+    <li><b>Footnotes:</b> to cite a source or add a note, put it in double square brackets right after the sentence it supports, [[like this]]. A line that starts with <b>Sources:</b> or <b>Note:</b> becomes a footnote too. Footnotes print together under <b>Notes &amp; Sources</b>, just before the Appendix.</li>
   </ul>
 
   <h3 class="sub">2. Fill in the fields</h3>
@@ -2099,10 +2112,13 @@ function viewS4(){
 
 /* live summaries on Steps 4 and 6 */
 function refreshFin(){
-  const ids = ['finLinesBox','finInvBox','seasonBox','collectBox','finExpBox','finStartupBox','payrollCalc','loanCalc'];
+  const ids = ['uofBox','finLinesBox','finInvBox','seasonBox','collectBox','finExpBox','finStartupBox','payrollCalc','loanCalc'];
   if(!ids.some(id=>document.getElementById(id))) return;
   const pf = runProForma();
   const put = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
+  // use of funds total
+  { const rows = data.s6.useOfFunds||[]; const tot = rows.reduce((a,r)=>a+N(r.amount),0);
+    put('uofBox', tot ? `<div class="calc-result"><strong>Total use of funds:</strong> ${fmtMoney(tot)}${pf.fund.total ? (Math.abs(tot-pf.fund.total)<1 ? ` ✓ matches your ${fmtMoney(pf.fund.total)} in funding.` : ` · your funding is ${fmtMoney(pf.fund.total)} (${tot>pf.fund.total?'short by '+fmtMoney(tot-pf.fund.total):fmtMoney(pf.fund.total-tot)+' not yet assigned'}).`) : ''}</div>` : `<p class="calc-placeholder">Enter amounts to see the total.</p>`); }
   // inventory
   if(pf.invDays>0 || pf.st.inv>0){
     const avgInv = sumArr(pf.inventory.slice(0,12))/12, cogsY1 = sumArr(pf.cogs.slice(0,12))/12;
@@ -2183,7 +2199,8 @@ function viewS6(){
   <div class="calc-box" id="loanCalc"></div>
   <h3 class="sub">Use of Funds</h3>
   <div class="callout">If you're requesting outside funding, explain what it will pay for. Your startup cost table from Step 4 is also shown in the plan as Sources &amp; Uses of Funds.</div>
-  ${dynTable('s6','useOfFunds',[{key:'category',label:'Category'},{key:'amount',label:'Amount'},{key:'notes',label:'Purpose / Notes'}],'Add line item')}
+  ${dynTable('s6','useOfFunds',[{key:'category',label:'Category'},{key:'amount',label:'Amount',onExtra:'refreshFin();'},{key:'notes',label:'Purpose / Notes'}],'Add line item')}
+  <div class="calc-box" id="uofBox"></div>
   <div class="nav-footer">
     <button class="btn btn-outline" onclick="goTo('s5')">← Back</button>
     <button class="btn btn-primary" onclick="goTo('proj')">Next: Financial Projections →</button>
@@ -2306,8 +2323,13 @@ function genFinancials(){
   const productPricingHtml = docTable(s5.productCosts, [{key:'component',label:'Cost Component'},{key:'amount',label:'Amount'}])
     + ((val(s5.cogs)||val(s5.retailPrice)) ? `<p class="doc-p">COGS: ${val(s5.cogs)||'—'} | Markup: ${val(s5.markup)||'—'} | Retail price: ${val(s5.retailPrice)||'—'}</p>` : '');
   let fin = '';
+  let finSup = '';
   if(finHasData()){
     const pf = runProForma(), be = computeBreakEven(pf), scs = computeScenarios();
+    if(FN_ACTIVE){
+      if(val(s4.cashflow)) finSup += fnAdd('<strong>Notes on the numbers:</strong> ' + fnText(s4.cashflow));
+      finSup += fnAdd('<strong>Key assumptions behind the projections:</strong>' + assumptionsHtml(pf));
+    }
     const labels = Array.from({length:36},(_,i)=>monthLabel(i));
     const totalCost = pf.rev.map((_,m)=>pf.cogs[m]+pf.varFees[m]+pf.opex[m]+pf.interest[m]);
     fin = docBlock('Financial Overview', finNarrative(pf, be) + finSummaryTable(pf)
@@ -2316,10 +2338,10 @@ function genFinancials(){
       + docBlock('Revenue Streams', pf.lines.length ? revenueStreamsTable(pf) : '')
       + docBlock('Break-Even Analysis', be ? breakEvenPlanTable(be) : '')
       + docBlock('Best Case / Worst Case', `<p class="doc-p" style="font-size:12.5px;">Best case: sales ${fmtPct(scs[2].revAdj,0)}, fixed costs ${fmtPct(scs[2].expAdj,0)}. Worst case: sales ${fmtPct(scs[0].revAdj,0)}, fixed costs ${fmtPct(scs[0].expAdj,0)}. Each case re-runs the full 3-year projection.</p>` + scenarioTable(scs))
-      + docBlock('Key Assumptions', assumptionsHtml(pf));
+      + (FN_ACTIVE ? '' : docBlock('Key Assumptions', assumptionsHtml(pf)));
   }
-  return fin
-    + docBlock('Notes on the Numbers', docP(s4.cashflow))
+  return fnAttach(fin, finSup)
+    + (finSup ? '' : docBlock('Notes on the Numbers', docP(s4.cashflow)))
     + docBlock('Pricing Detail — Service-Based', svcPricingHtml)
     + docBlock('Pricing Detail — Product-Based', productPricingHtml)
     + docBlock('Pricing Strategy Notes', docP(s5.notes));
@@ -2350,7 +2372,76 @@ function buildWideDoc(format){
 }
 
 /* ============ DOCUMENT CONTENT GENERATORS ============ */
-function docP(v){ return val(v) ? `<p class="doc-p">${val(v)}</p>` : ''; }
+/* ---- Text formatting: **bold**, *italic*, __underline__ typed in any box print as formatting ---- */
+function fmtInline(h){
+  if(!h) return h;
+  return h.replace(/\*\*(?=\S)([^\n]*?\S)\*\*/g, '<strong>$1</strong>')
+          .replace(/__(?=\S)([^\n]*?\S)__/g, '<u>$1</u>')
+          .replace(/(^|[^*\w])\*(?=\S)([^*\n]*?\S)\*(?![*\w])/g, '$1<em>$2</em>');
+}
+function fmtVal(v){ const t = val(v); return t ? fmtInline(t) : t; }
+function fmtWrap(id, mark){
+  const ta = document.getElementById(id); if(!ta) return;
+  const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value, sel = v.slice(s, e), L = mark.length;
+  if(sel.length >= 2*L && sel.startsWith(mark) && sel.endsWith(mark)){
+    const inner = sel.slice(L, sel.length-L);
+    ta.value = v.slice(0,s) + inner + v.slice(e); ta.setSelectionRange(s, s+inner.length);
+  } else if(s >= L && v.slice(s-L, s) === mark && v.slice(e, e+L) === mark && !(mark === '*' && (v[s-L-1] === '*' || v[e+L] === '*'))){
+    ta.value = v.slice(0, s-L) + sel + v.slice(e+L); ta.setSelectionRange(s-L, e-L);
+  } else if(!sel){
+    ta.value = v.slice(0,s) + mark + mark + v.slice(e); ta.setSelectionRange(s+L, s+L);
+  } else {
+    const out = sel.split('\n').map(line => {
+      const m = line.match(/^(\s*(?:[•\-–]\s+|\d+[.)]\s+)?)(.*?)(\s*)$/);
+      return m && m[2] ? m[1] + mark + m[2] + mark + m[3] : line;
+    }).join('\n');
+    ta.value = v.slice(0,s) + out + v.slice(e); ta.setSelectionRange(s, s+out.length);
+  }
+  ta.focus(); ta.dispatchEvent(new Event('input', {bubbles:true}));
+}
+function fmtBar(id){
+  const b = (mark, label, title, style) => `<button type="button" class="fmt-btn" title="${title}" aria-label="${title}" onmousedown="event.preventDefault()" onclick="fmtWrap('${id}','${mark}')"><span style="${style}">${label}</span></button>`;
+  return `<div class="fmt-bar" role="toolbar" aria-label="Text formatting">${b('**','B','Bold (Ctrl+B)','font-weight:800;')}${b('*','I','Italic (Ctrl+I)','font-style:italic;font-family:Georgia,serif;')}${b('__','U','Underline (Ctrl+U)','text-decoration:underline;')}<span class="fmt-tip">Select words, then click. Prints as formatting in your plan.</span></div>`;
+}
+document.addEventListener('keydown', e => {
+  if(!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
+  const t = e.target; if(!t || t.tagName !== 'TEXTAREA' || !t.id) return;
+  const k = (e.key||'').toLowerCase(); const mark = k==='b' ? '**' : k==='i' ? '*' : k==='u' ? '__' : null;
+  if(mark){ e.preventDefault(); fmtWrap(t.id, mark); }
+});
+/* ---- Footnotes: notes & sources print together near the end of the plan, before the Appendix ----
+   [[text]] anywhere in a field becomes a footnote; a line starting with "Sources:" or "Note:" does too. */
+let FN_ACTIVE = false, FOOTNOTES = [];
+function fnAdd(html){
+  const t = (html||'').trim(); if(!t) return '';
+  let i = FOOTNOTES.indexOf(t); if(i === -1){ FOOTNOTES.push(t); i = FOOTNOTES.length-1; }
+  return `<sup class="fn-ref">${i+1}</sup>`;
+}
+function fnText(raw){
+  if(!raw || !raw.toString().trim()) return null;
+  raw = raw.toString();
+  if(!FN_ACTIVE) return fmtInline(esc(raw.replace(/\[\[([\s\S]*?)\]\]/g, '($1)')));
+  const notes = [];
+  let s = raw.replace(/[ \t]*\[\[([\s\S]*?)\]\]/g, (m, n) => { notes.push(n.trim()); return '\u0001' + (notes.length-1) + '\u0002'; });
+  const keep = [], tail = [];
+  s.split('\n').forEach(l => { if(/^\s*(sources?|notes?)\s*:/i.test(l)) tail.push(l.trim()); else keep.push(l); });
+  s = keep.join('\n').replace(/\s+$/, '');
+  let out = esc(s).replace(/\u0001(\d+)\u0002/g, (m, k) => fnAdd(fmtInline(esc(notes[+k]))));
+  tail.forEach(t => { out += fnAdd(fmtInline(esc(t))); });
+  return fmtInline(out);
+}
+function fnList(){
+  return FOOTNOTES.length ? `<ol class="doc-notes">${FOOTNOTES.map((n,i)=>`<li id="fn-${i+1}">${n}</li>`).join('')}</ol>` : '';
+}
+function fnAttach(html, sup){ return sup && html ? html.replace('</h3>', sup + '</h3>') : html; }
+function useOfFundsTable(){
+  const rows = data.s6.useOfFunds || [];
+  const t = docTable(rows, [{key:'category',label:'Category'},{key:'amount',label:'Amount'},{key:'notes',label:'Purpose / Notes'}]);
+  if(!t) return '';
+  const total = rows.reduce((a,r)=> a + N(r.amount), 0);
+  return t.replace('</tbody>', `<tr class="doc-total"><td><strong>Total</strong></td><td><strong>${fmtMoney(total)}</strong></td><td></td></tr></tbody>`);
+}
+function docP(v){ const t = fnText(v); return t ? `<p class="doc-p">${t}</p>` : ''; }
 function docBlock(title, bodyHtml){
   return bodyHtml ? `<h3 class="doc-h3">${esc(title).replace(/&amp;amp;/g,'&amp;')}</h3>${bodyHtml}` : '';
 }
@@ -2362,7 +2453,7 @@ function docTable(rows, cols){
   html += `</tr></thead><tbody>`;
   rows.forEach(r=>{
     if(!cols.some(c=>val(r[c.key]))) return;
-    html += '<tr>'; cols.forEach(c=> html += `<td>${val(r[c.key])||''}</td>`); html += '</tr>';
+    html += '<tr>'; cols.forEach(c=> html += `<td>${fnText(r[c.key])||''}</td>`); html += '</tr>';
   });
   html += '</tbody></table>';
   return html;
@@ -2371,11 +2462,11 @@ let WORD_EXPORT_MODE = false;
 
 function bmcTableForWord(){
   const bmc = data.s1.bmc;
-  const cell = v => val(v) || '—';
+  const cell = v => fmtVal(v) || '—';
   function td(title, content, rowspan, colspan){
     const rs = rowspan ? ` rowspan="${rowspan}"` : '';
     const cs = colspan ? ` colspan="${colspan}"` : '';
-    return `<td${rs}${cs} style="background:#F7F6F1;padding:6pt;vertical-align:top;font-size:10pt;"><strong style="color:#000E54;">${esc(title)}</strong><br>${esc(content)}</td>`;
+    return `<td${rs}${cs} style="background:#F7F6F1;padding:6pt;vertical-align:top;font-size:10pt;"><strong style="color:#000E54;">${esc(title)}</strong><br>${content}</td>`;
   }
   return `<table border="1" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;font-size:10pt;margin:10pt 0 18pt 0;">
     <tr>
@@ -2405,7 +2496,7 @@ function swotItems(text){
 function swotList(text){
   const items = swotItems(text);
   if(!items.length) return '<span class="empty">—</span>';
-  return `<ul class="swot-ul">${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`;
+  return `<ul class="swot-ul">${items.map(i=>`<li>${fmtInline(esc(i))}</li>`).join('')}</ul>`;
 }
 function swotTableForWord(){
   const s = data.s2.swot;
@@ -2429,7 +2520,7 @@ function bmcDocGrid(){
   if(!bmcHasData()) return '';
   if(WORD_EXPORT_MODE) return bmcTableForWord();
   const bmc = data.s1.bmc;
-  const cell = v => val(v) || '<span class="empty">—</span>';
+  const cell = v => fmtVal(v) || '<span class="empty">—</span>';
   function box(area, title, value){
     return `<div style="grid-area:${area};display:flex;flex-direction:column;">
       <div class="hd">${esc(title)}</div>
@@ -2452,7 +2543,7 @@ function swotDocGrid(){
   if(!swotHasData()) return '';
   if(WORD_EXPORT_MODE) return swotTableForWord();
   const s = data.s2.swot;
-  const cell = v => val(v) || '<span class="empty">—</span>';
+  const cell = v => fmtVal(v) || '<span class="empty">—</span>';
   return `<div class="swot-doc">
     <div class="hd">Strengths</div><div class="hd">Weaknesses</div>
     <div>${swotList(s.strengths)}</div><div>${swotList(s.weaknesses)}</div>
@@ -2474,7 +2565,7 @@ function genCompanyDescription(){
   const structureLine = (val(b.structure) || val(b.location)) ?
     `${val(b.structure)||'Structure not yet specified'}${val(b.location)? ', based in '+val(b.location) : ''}.` : null;
   const vpFilled = val(s1.vpSegment)||val(s1.vpProblem)||val(s1.vpProduct)||val(s1.vpBenefit)||val(s1.vpDiff);
-  const vpSentence = vpFilled ? ('For '+(val(s1.vpSegment)||'___')+' who '+ (val(s1.vpProblem)||'___') +', our '+(val(s1.vpProduct)||'product/service')+' provides '+(val(s1.vpBenefit)||'___')+'. Unlike alternatives, '+(val(s1.vpDiff)||'we differentiate by ___')+'.') : null;
+  const vpSentence = vpFilled ? fmtInline('For '+(val(s1.vpSegment)||'___')+' who '+ (val(s1.vpProblem)||'___') +', our '+(val(s1.vpProduct)||'product/service')+' provides '+(val(s1.vpBenefit)||'___')+'. Unlike alternatives, '+(val(s1.vpDiff)||'we differentiate by ___')+'.') : null;
   return docBlock('Mission Statement', docP(s1.mission))
     + docBlock('Vision Statement', docP(s1.vision))
     + docBlock('Ownership &amp; Legal Structure', structureLine ? `<p class="doc-p">${structureLine}</p>` : '')
@@ -2482,6 +2573,10 @@ function genCompanyDescription(){
 }
 function genMarketAnalysis(){
   const s2 = data.s2;
+  const toolsSup = (FN_ACTIVE && val(s2.tools)) ? fnAdd('<strong>Research sources:</strong> ' + fnText(s2.tools)) : '';
+  return fnAttach(genMarketBlocks(s2), toolsSup);
+}
+function genMarketBlocks(s2){
   return docBlock('Target Customer Profile', docP(s2.demo))
     + docBlock('Customer Needs, Goals &amp; Pain Points', docP(s2.needs))
     + docBlock('Current Alternatives', docP(s2.alt))
@@ -2490,7 +2585,7 @@ function genMarketAnalysis(){
     + docBlock('Market Trends', docP(s2.trends))
     + docBlock('Competitive Analysis', docTable(s2.competitors, [{key:'name',label:'Competitor'},{key:'strengths',label:'Strengths'},{key:'weaknesses',label:'Weaknesses'},{key:'diff',label:'Differentiation'}]))
     + docBlock('SWOT Analysis', swotDocGrid())
-    + docBlock('Research Sources', docP(s2.tools));
+    + (FN_ACTIVE ? '' : docBlock('Research Sources', docP(s2.tools)));
 }
 function genOrgManagement(){
   const b = data.business, s6 = data.s6;
@@ -2561,11 +2656,11 @@ function genOtherDocsSection(){
 function genAppendix(){
   const s6 = data.s6, s7 = data.s7;
   const feasibilityDetails = (val(s7.demand)||val(s7.revenue)||val(s7.capital)) ?
-    `<p class="doc-p">${val(s7.demand)? '<strong>Demand evidence:</strong> '+val(s7.demand)+'<br>' : ''}${val(s7.revenue)? '<strong>Revenue sustainability:</strong> '+val(s7.revenue)+'<br>' : ''}${val(s7.capital)? '<strong>Capital &amp; readiness:</strong> '+val(s7.capital) : ''}</p>` : '';
+    `<p class="doc-p">${val(s7.demand)? '<strong>Demand evidence:</strong> '+fnText(s7.demand)+'<br>' : ''}${val(s7.revenue)? '<strong>Revenue sustainability:</strong> '+fnText(s7.revenue)+'<br>' : ''}${val(s7.capital)? '<strong>Capital &amp; readiness:</strong> '+val(s7.capital) : ''}</p>` : '';
   const assessmentHtml = val(s7.assessment) ? `<p class="doc-p"><strong>Overall Feasibility Assessment:</strong> ${val(s7.assessment)}</p>` : '';
   const riskBlock = docP(s7.risks) + feasibilityDetails + assessmentHtml;
 
-  return docBlock('Use of Funds', docTable(s6.useOfFunds, [{key:'category',label:'Category'},{key:'amount',label:'Amount'},{key:'notes',label:'Purpose / Notes'}]))
+  return docBlock('Use of Funds', useOfFundsTable())
     + (wideDocIncluded(data.settings.format) ? `<p class="doc-p"><em>Appendix B: Projected Financial Statements follows on landscape pages at the end of this plan.</em></p>` : '')
     + docBlock('Inventory Management', docP(s6.inventory))
     + docBlock('Risk Analysis', riskBlock)
@@ -2593,11 +2688,12 @@ const SECTION_DEFS = {
   marketing:  {title:'Marketing & Sales Strategy',    gen:genMarketingSales},
   funding:    {title:'Funding Request',               gen:genFundingRequest},
   financials: {title:'Financial Plan',                gen:genFinancials},
+  notes:      {title:'Notes & Sources',               gen:()=> ''},
   appendix:   {title:'Appendix',                      gen:()=> genBMCAppendixIntro() + genAppendix()}
 };
 const FORMAT_ORDER = {
-  traditional: ['exec','company','market','org','product','marketing','funding','financials','appendix'],
-  investor:    ['exec','funding','company','market','org','product','marketing','financials','appendix'],
+  traditional: ['exec','company','market','org','product','marketing','funding','financials','notes','appendix'],
+  investor:    ['exec','funding','company','market','org','product','marketing','financials','notes','appendix'],
 };
 const FORMAT_META = {
   traditional: {label:'Traditional Business Plan', desc:'The standard full plan structure — good for general planning and most audiences.'},
@@ -2650,9 +2746,12 @@ function buildStructuredDoc(format){
   // Compute each section's body first, then drop any that ended up with no actual content —
   // an entirely empty top-level section (e.g. nothing filled in Funding Request) shouldn't
   // print as an orphaned heading with nothing underneath.
-  const rendered = candidateOrder
-    .map(key => ({ key, def: SECTION_DEFS[key], body: SECTION_DEFS[key].gen() }))
-    .filter(item => item.body && item.body.trim().length > 0);
+  FN_ACTIVE = candidateOrder.includes('notes'); FOOTNOTES = [];
+  const all = candidateOrder.map(key => ({ key, def: SECTION_DEFS[key], body: key === 'notes' ? '' : SECTION_DEFS[key].gen() }));
+  const notesItem = all.find(x => x.key === 'notes');
+  if(notesItem) notesItem.body = fnList() ? `<p class="doc-p" style="font-size:12.5px;">Numbered notes and sources referenced throughout this plan.</p>` + fnList() : '';
+  FN_ACTIVE = false;
+  const rendered = all.filter(item => item.body && item.body.trim().length > 0);
   const finalOrder = rendered.map(r => r.key);
 
   let html = renderCover(format);
@@ -2662,7 +2761,7 @@ function buildStructuredDoc(format){
     const sectionHtml = `<h2 class="doc-h2" data-section-key="${item.key}">${i+1}. ${esc(item.def.title)}</h2>${item.body}`;
     html += item.key === 'appendix' ? `<div class="doc-appendix-wrap">${sectionHtml}</div>` : sectionHtml;
   });
-  return html;
+  return html.replace(/<\/sup><sup class="fn-ref">/g, ',');
 }
 function leanBlock(title, contentHtml){
   if(!contentHtml) return '';
