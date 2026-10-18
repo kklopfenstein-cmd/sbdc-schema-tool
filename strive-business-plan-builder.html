@@ -445,7 +445,8 @@ function defaultData(){
         tax:{ss:'6.2', medicare:'1.45', futa:'0.6', futaBase:'7000', suta:'2.85', sutaBase:'9000', wc:'1.0'},
         inventory:'',
         funding:[{source:'',type:'',amount:'',rate:'',term:'',status:''}],
-        useOfFunds:[{category:'',amount:'',notes:''}]},
+        useOfFunds:[{category:'',amount:'',notes:''}],
+        riskList:[{risk:'',likelihood:'',impact:'',mitigation:''}]},
     appendix:{resumes:[{id:uid(),label:'',fileName:'',mimeType:'',size:0}],
               otherDocs:[{id:uid(),label:'',fileName:'',mimeType:'',size:0}]},
     s7:{checklist:{exec:false,mvvp:false,bmc:false,customer:false,competitive:false,branding:false,
@@ -477,6 +478,20 @@ async function storageDelete(key){
 
 
 /* Plans saved by the earlier version stored Year 1 by quarter. Convert them once, before merging. */
+/* Older plans typed risks as text in Step 8; move them into the Step 6 Risks & Mitigation table. */
+function migrateRisks(d){
+  if(!d || !d.s6 || !d.s7) return d;
+  const txt = (d.s7.risks||'').trim();
+  const list = d.s6.riskList || [];
+  const empty = !list.some(r => Object.values(r||{}).some(v => (v||'').toString().trim()));
+  if(!txt || !empty) return d;
+  const rows = txt.split(/\n+|\s(?=\d+[.)]\s)/).map(s=>s.replace(/^\s*(\d+[.)]|[•\-–])\s*/,'').trim()).filter(Boolean).map(s=>{
+    const i = s.indexOf(':');
+    return i > 0 ? {risk:s.slice(0,i).trim(), likelihood:'', impact:'', mitigation:s.slice(i+1).trim()} : {risk:s, likelihood:'', impact:'', mitigation:''};
+  });
+  if(rows.length){ d.s6.riskList = rows; d.s7.risks = ''; }
+  return d;
+}
 function migrateRaw(p){
   if(!p || !p.s4 || p.s4.lines) return p;
   const s4 = p.s4, out = {lines:[], expenses:[], migratedNotice:false};
@@ -526,7 +541,7 @@ async function loadData(){
     const value = await storageGet('plan-data');
     if(value){
       const loaded = migrateRaw(JSON.parse(value));
-      data = deepMerge(defaultData(), loaded);
+      data = migrateRisks(deepMerge(defaultData(), loaded));
     }
   }catch(e){ /* no saved data yet — use defaults */ }
   renderAll();
@@ -1249,7 +1264,7 @@ function handleImportFile(inputEl){
         inputEl.value = '';
         return;
       }
-      data = deepMerge(defaultData(), migrateRaw(bundle.planData));
+      data = migrateRisks(deepMerge(defaultData(), migrateRaw(bundle.planData)));
       if(bundle.resumeFiles){
         for(const id in bundle.resumeFiles){
           await saveResumeFile(id, bundle.resumeFiles[id]);
@@ -1690,10 +1705,10 @@ function viewS7(){
   <h3 class="sub">Business Plan Completion Checklist</h3>
   ${checklistHtml}
   <h3 class="sub" style="margin-top:26px;">Business Feasibility Audit</h3>
-  <div class="callout">Answer honestly — this is a gut-check before you commit resources to launch. These answers will appear as your plan's Risk Analysis. An SBDC advisor can talk them through with you at no cost — <a href="https://clients.ohiosbdc.ohio.gov/reg.aspx?mode=counsel&amp;center=17047&amp;subloc=0">request advising</a>.</div>
+  <div class="callout">Answer honestly — this is a gut-check before you commit resources to launch. These answers will appear in your plan's Appendix as a Feasibility Review. An SBDC advisor can talk them through with you at no cost — <a href="https://clients.ohiosbdc.ohio.gov/reg.aspx?mode=counsel&amp;center=17047&amp;subloc=0">request advising</a>.</div>
   ${field('Is there proven demand for this product/service? What evidence supports this?','s7.demand',{textarea:true,rows:2})}
   ${field('Can this business generate enough revenue to be sustainable?','s7.revenue',{textarea:true,rows:2,hint:'reference your break-even analysis'+(breakEvenSummary()?' — yours is '+breakEvenSummary():'')})}
-  ${field('What are the top 3 risks, and how will you mitigate each?','s7.risks',{textarea:true,rows:3})}
+  ${(data.s7.risks||'').trim() ? field('What are the top 3 risks, and how will you mitigate each?','s7.risks',{textarea:true,rows:3}) : `<div class="callout"><b>Risks and how you'll handle them</b> are entered in <b>Step 6: Operations</b> (Risks &amp; Mitigation) and print in your plan's Operations Plan.</div>`}
   ${field('Do you have (or can you access) the capital, skills, and time needed to launch?','s7.capital',{textarea:true,rows:2})}
   ${field('Overall Feasibility Assessment','s7.assessment',{hint:'Go / Go with changes / Not yet'})}
   <h3 class="sub">Next Steps &amp; Action Plan</h3>
@@ -2186,6 +2201,9 @@ function viewS6(){
   <div class="calc-box" id="payrollCalc"></div>
   <h3 class="sub">Inventory Management</h3>
   ${field('How will you track, store, order & restock inventory? (skip if service-only)','s6.inventory',{textarea:true,rows:3})}
+  <h3 class="sub">Risks &amp; Mitigation</h3>
+  <div class="callout">List the biggest things that could go wrong (slow sales, losing a key person, rising costs, a supplier problem, new regulations) and what you'll do about each. Rate how likely each one is and how much it would hurt. Lenders want to see you've thought these through. These print in your plan's <b>Operations Plan</b>.</div>
+  ${dynTable('s6','riskList',[{key:'risk',label:'Risk'},{key:'likelihood',label:'Likelihood',type:'select',options:['Low','Medium','High']},{key:'impact',label:'Impact',type:'select',options:['Low','Medium','High']},{key:'mitigation',label:'How we will reduce or handle it'}],'Add risk')}
   <h3 class="sub">Access to Capital</h3>
   <div class="callout">List every source of outside money. Pick a <b>Type</b>: loans are repaid with interest; equity (investors) and grants are not. For a loan, add the interest rate and term so the projections can split each payment into interest (an expense) and principal. Your own cash goes in Step 4.</div>
   ${dynTable('s6','funding',[
@@ -2342,9 +2360,11 @@ function genFinancials(){
   }
   return fnAttach(fin, finSup)
     + (finSup ? '' : docBlock('Notes on the Numbers', docP(s4.cashflow)))
-    + docBlock('Pricing Detail — Service-Based', svcPricingHtml)
-    + docBlock('Pricing Detail — Product-Based', productPricingHtml)
-    + docBlock('Pricing Strategy Notes', docP(s5.notes));
+    + pricingWithNotes(docBlock('Pricing Detail — Service-Based', svcPricingHtml) + docBlock('Pricing Detail — Product-Based', productPricingHtml), s5.notes);
+}
+function pricingWithNotes(pricingHtml, notes){
+  if(FN_ACTIVE && val(notes) && pricingHtml) return fnAttach(pricingHtml, fnAdd('<strong>Pricing strategy notes:</strong> ' + fnText(notes)));
+  return pricingHtml + docBlock('Pricing Strategy Notes', docP(notes));
 }
 /* Projected statements print on landscape pages after the portrait plan (and in a landscape section of the Word file). */
 function wideDocIncluded(format){
@@ -2662,8 +2682,7 @@ function genAppendix(){
 
   return docBlock('Use of Funds', useOfFundsTable())
     + (wideDocIncluded(data.settings.format) ? `<p class="doc-p"><em>Appendix B: Projected Financial Statements follows on landscape pages at the end of this plan.</em></p>` : '')
-    + docBlock('Inventory Management', docP(s6.inventory))
-    + docBlock('Risk Analysis', riskBlock)
+    + docBlock('Feasibility Review', riskBlock)
     + genResumesSection()
     + docBlock('Action Plan', docTable(s7.actions, [{key:'item',label:'Action Item'},{key:'owner',label:'Owner'},{key:'date',label:'Target Date'}]))
     + genOtherDocsSection()
@@ -2674,6 +2693,16 @@ function genAppendix(){
   <div class="doc-check"><span class="box"></span>Market research data / survey results</div>
   <div class="doc-check"><span class="box"></span>Detailed financial projections (included above)</div>
   <div class="doc-check"><span class="box"></span>Marketing materials / brand assets</div>`;
+}
+function riskTableHtml(){
+  const rows = (data.s6.riskList||[]).filter(r => val(r.risk) || val(r.mitigation));
+  if(!rows.length) return '';
+  return docTable(rows, [{key:'risk',label:'Risk'},{key:'likelihood',label:'Likelihood'},{key:'impact',label:'Impact'},{key:'mitigation',label:'Mitigation'}]);
+}
+function genOperations(){
+  const s6 = data.s6;
+  return docBlock('Inventory Management', docP(s6.inventory))
+    + docBlock('Risks &amp; Mitigation', riskTableHtml());
 }
 function genBMCAppendixIntro(){
   return docBlock('Business Model Canvas', bmcDocGrid());
@@ -2687,13 +2716,14 @@ const SECTION_DEFS = {
   product:    {title:'Products & Services',           gen:genProductService},
   marketing:  {title:'Marketing & Sales Strategy',    gen:genMarketingSales},
   funding:    {title:'Funding Request',               gen:genFundingRequest},
+  operations: {title:'Operations Plan',               gen:genOperations},
   financials: {title:'Financial Plan',                gen:genFinancials},
   notes:      {title:'Notes & Sources',               gen:()=> ''},
   appendix:   {title:'Appendix',                      gen:()=> genBMCAppendixIntro() + genAppendix()}
 };
 const FORMAT_ORDER = {
-  traditional: ['exec','company','market','org','product','marketing','funding','financials','notes','appendix'],
-  investor:    ['exec','funding','company','market','org','product','marketing','financials','notes','appendix'],
+  traditional: ['exec','company','market','org','product','marketing','operations','funding','financials','notes','appendix'],
+  investor:    ['exec','funding','company','market','org','product','marketing','operations','financials','notes','appendix'],
 };
 const FORMAT_META = {
   traditional: {label:'Traditional Business Plan', desc:'The standard full plan structure — good for general planning and most audiences.'},
@@ -2794,6 +2824,8 @@ function buildLeanDoc(){
   html += leanBlock('Team', teamLine? `<p class="doc-p">${esc(teamLine)}</p>` : docP(''));
   html += leanBlock('Financial Snapshot', finSnapshot? `<p class="doc-p">${finSnapshot}</p>` : docP(''));
   html += leanBlock('Funding Ask', docP(ex.fundingUse));
+  { const rk = (s6.riskList||[]).filter(r=>val(r.risk)).map(r=>fmtVal(r.risk)+(val(r.mitigation)?' — '+fnText(r.mitigation):''));
+    if(rk.length) html += leanBlock('Key Risks', `<p class="doc-p">${rk.join('<br>')}</p>`); }
   html += WORD_EXPORT_MODE ? '' : `</div>`;
   return html;
 }
