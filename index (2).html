@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Build a sourced, no-guessing market and industry research prompt from a NAICS code, geography and target market.">
+<title>Market Research Prompt Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+/* Layout: two-pane workbench. Form on the left, live prompt "worksheet" on the right; stacks on phones. */
+:root{
+  --bg:#f3f5f6; --panel:#ffffff; --ink:#18242c; --muted:#5b6b75; --line:#d6dee2;
+  --accent:#1f5e7a; --accent-soft:#e3eef3; --warn:#8a5a00; --warn-soft:#fbf1dc;
+  --code-bg:#f8fafb;
+  --f-display:"Source Serif 4", Georgia, serif;
+  --f-body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11181d; --panel:#172129; --ink:#e3eaee; --muted:#93a4ae; --line:#2b3a44;
+  --accent:#6fb3d2; --accent-soft:#1c3340; --warn:#e8b75a; --warn-soft:#33281a; --code-bg:#121b21; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11181d; --panel:#172129; --ink:#e3eaee; --muted:#93a4ae; --line:#2b3a44;
+  --accent:#6fb3d2; --accent-soft:#1c3340; --warn:#e8b75a; --warn-soft:#33281a; --code-bg:#121b21; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding-block:32px 56px;
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+header{display:grid;gap:6px;margin-bottom:28px;max-width:70ch}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font-family:var(--f-display);font-size:clamp(28px,4vw,38px);line-height:1.15;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:28px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+form{display:grid;gap:22px}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:14px}
+legend{font-family:var(--f-display);font-size:19px;font-weight:600;padding:0;margin-bottom:10px;display:flex;gap:10px;align-items:baseline}
+legend .step{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-weight:500}
+.field{display:grid;gap:6px;min-width:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:12px}
+@media (max-width:480px){.row{grid-template-columns:minmax(0,1fr)}}
+label{font-weight:600;font-size:13.5px}
+.hint{font-size:12.5px;color:var(--muted)}
+input[type=text],select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--panel);
+  border:1px solid var(--line);border-radius:6px;padding:9px 11px}
+textarea{resize:vertical;min-height:64px}
+input:focus,select:focus,textarea:focus,button:focus-visible,.chk input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
+#naics{font-family:var(--f-mono);letter-spacing:.04em}
+.naics-level{font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+.naics-level.bad{color:var(--warn)}
+
+.chks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:480px){.chks{grid-template-columns:minmax(0,1fr)}}
+.chk{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:var(--panel);cursor:pointer;font-size:13.5px}
+.chk input{margin-top:3px;accent-color:var(--accent)}
+.chk:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+
+.out{position:sticky;top:calc(16px + env(safe-area-inset-top,0px));display:grid;gap:12px;min-width:0}
+.out-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.out-head h2{font-family:var(--f-display);font-size:19px;margin:0}
+.meta{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-weight:600;font-size:13.5px;border-radius:6px;padding:8px 14px;cursor:pointer;border:1px solid var(--accent)}
+.primary{background:var(--accent);color:var(--panel)}
+.ghost{background:transparent;color:var(--accent)}
+pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:18px;
+  font-family:var(--f-mono);font-size:12.5px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;
+  max-height:72vh;overflow:auto;color:var(--ink)}
+.note{background:var(--warn-soft);color:var(--ink);border-left:3px solid var(--warn);padding:10px 12px;border-radius:0 6px 6px 0;font-size:13px}
+.note b{color:var(--warn)}
+.toast{font-size:13px;color:var(--accent);min-height:1.2em}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Industry &amp; market research</span>
+    <h1>Market Research Prompt Builder</h1>
+    <p>Fill in the industry, place and customer. The builder writes a research prompt that tells the AI to use only verifiable, sourced facts and to say "not found" instead of guessing.</p>
+  </header>
+
+  <div class="grid">
+    <form id="f" autocomplete="off">
+      <fieldset>
+        <legend><span class="step">1</span>Industry</legend>
+        <div class="row">
+          <div class="field">
+            <label for="naics">NAICS code</label>
+            <input type="text" id="naics" inputmode="numeric" maxlength="6" value="238220">
+            <span class="naics-level" id="naicsLevel"></span>
+          </div>
+          <div class="field">
+            <label for="industry">Industry description</label>
+            <input type="text" id="industry" value="Plumbing, Heating, and Air-Conditioning Contractors">
+            <span class="hint">Use the official NAICS title if you know it.</span>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="step">2</span>Geography</legend>
+        <div class="row">
+          <div class="field">
+            <label for="geoLevel">Level</label>
+            <select id="geoLevel">
+              <option>National (U.S.)</option>
+              <option>State</option>
+              <option selected>Metro area (MSA)</option>
+              <option>County</option>
+              <option>City</option>
+              <option>Global</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="geo">Area</label>
+            <input type="text" id="geo" value="Dayton-Kettering-Beavercreek, OH MSA">
+          </div>
+        </div>
+        <div class="field">
+          <label for="compare">Compare against (optional)</label>
+          <input type="text" id="compare" value="Ohio and U.S. national averages">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="step">3</span>Target market</legend>
+        <div class="field">
+          <label for="market">Who are the customers?</label>
+          <textarea id="market">Residential homeowners and small commercial property owners needing HVAC replacement and service</textarea>
+        </div>
+        <div class="field">
+          <label for="purpose">Purpose of the research (optional)</label>
+          <input type="text" id="purpose" value="Evaluate market entry for a new HVAC service business">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="step">4</span>What to cover</legend>
+        <div class="chks" id="sections"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="step">5</span>Options</legend>
+        <div class="row">
+          <div class="field">
+            <label for="years">Data recency</label>
+            <select id="years">
+              <option value="2">Last 2 years</option>
+              <option value="3" selected>Last 3 years</option>
+              <option value="5">Last 5 years</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="format">Output format</label>
+            <select id="format">
+              <option selected>Structured report with headings and tables</option>
+              <option>Executive summary (1 page) plus data appendix</option>
+              <option>Bullet-point brief</option>
+              <option>Slide-ready outline</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="bizSize">Business size to benchmark against (optional)</label>
+          <input type="text" id="bizSize" value="$1M–$5M annual revenue, 10–49 employees">
+          <span class="hint">Used to pick the matching size class in benchmarking sources.</span>
+        </div>
+        <label class="chk"><input type="checkbox" id="paid"><span>Allow paid/subscription sources (IBISWorld, Statista, etc.) only if the AI can actually open them</span></label>
+      </fieldset>
+    </form>
+
+    <section class="out" aria-labelledby="outTitle">
+      <div class="out-head">
+        <div>
+          <h2 id="outTitle">Your prompt</h2>
+          <span class="meta" id="count"></span>
+        </div>
+        <div class="btns">
+          <button type="button" class="ghost" id="reset">Clear form</button>
+          <button type="button" class="primary" id="copy">Copy prompt</button>
+        </div>
+      </div>
+      <div class="toast" id="toast" role="status"></div>
+      <pre id="prompt" tabindex="0"></pre>
+      <div class="note"><b>Turn on web search</b> in the AI tool before pasting this prompt. Without live search, a model can only cite from memory, and it cannot verify URLs. Spot-check a few cited figures against the source before relying on them.</div>
+    </section>
+  </div>
+</div>
+
+<script>
+const SECTIONS = [
+  ["size","Market size & revenue", true],
+  ["estab","Number of establishments & employment", true],
+  ["wages","Wages & payroll", true],
+  ["growth","Growth trends & forecasts", true],
+  ["comp","Competitive landscape & key players", true],
+  ["demand","Customer demographics & demand drivers", true],
+  ["reg","Regulations & licensing", false],
+  ["risk","Risks, threats & headwinds", false],
+  ["tech","Technology & innovation trends", false],
+  ["price","Pricing & margins", false],
+  ["bench","Benchmarking & financial ratios", true],
+];
+const DETAIL = {
+  size:"Market size and revenue: total industry receipts/revenue for the geography, with the data year.",
+  estab:"Establishments and employment: number of establishments, employees, and size-class distribution (County Business Patterns, QCEW, Nonemployer Statistics).",
+  wages:"Wages and payroll: annual payroll, average annual wage, and median wages for key occupations (BLS OEWS).",
+  growth:"Growth trends: 3–5 year change in establishments, employment and revenue, plus any published forecasts. Label forecasts as projections and name who made them.",
+  comp:"Competitive landscape: leading companies operating in the geography, market concentration, and notable recent entries, exits, or acquisitions. Only name companies you can confirm exist and operate there.",
+  demand:"Customers and demand drivers: population, households, income, housing or business counts relevant to the target market (ACS, BEA, local economic development data).",
+  reg:"Regulations and licensing: federal, state, and local licensing or permit requirements, and pending rule changes.",
+  risk:"Risks: economic, labor, supply-chain, and regulatory headwinds documented in published sources.",
+  tech:"Technology trends: documented shifts in equipment, software, or service delivery affecting this industry.",
+  price:"Pricing and margins: published pricing benchmarks, cost structure, or margin data. Note if none is publicly available.",
+  bench:"Benchmarking: industry performance norms a business can compare itself against. Include, where published: revenue per employee, revenue per establishment, average employees per establishment, payroll as % of revenue, gross margin, operating/net profit margin, cost of goods as % of revenue, current ratio, debt-to-equity, and days receivable. Also provide common-size financial statements: income statement line items as a percentage of revenue (cost of goods sold, gross profit, officer compensation, salaries and wages, rent, depreciation, advertising, other operating expenses, operating profit, interest expense, pretax profit) and balance sheet items as a percentage of total assets (cash, accounts receivable, inventory, other current assets, net fixed assets, total current liabilities, long-term debt, net worth). Show each metric for the selected geography and the benchmark comparison where available, and break out by business size class if the source does.",
+};
+const box = document.getElementById("sections");
+SECTIONS.forEach(([id,label,on])=>{
+  const l=document.createElement("label"); l.className="chk";
+  l.innerHTML=`<input type="checkbox" id="s_${id}" ${on?"checked":""}><span>${label}</span>`;
+  box.appendChild(l);
+});
+
+const $=id=>document.getElementById(id);
+const LEVELS={2:"Sector",3:"Subsector",4:"Industry group",5:"NAICS industry",6:"National industry"};
+
+function naicsInfo(){
+  const v=$("naics").value.trim();
+  const el=$("naicsLevel");
+  if(!v){el.textContent="";el.className="naics-level";return}
+  if(/^\d{2,6}$/.test(v)){el.textContent=`${v.length}-digit · ${LEVELS[v.length]}`;el.className="naics-level"}
+  else{el.textContent="Use 2–6 digits";el.className="naics-level bad"}
+}
+
+function build(){
+  naicsInfo();
+  const naics=$("naics").value.trim()||"[NAICS code]";
+  const ind=$("industry").value.trim();
+  const geo=$("geo").value.trim()||"[geography]";
+  const lvl=$("geoLevel").value;
+  const cmp=$("compare").value.trim();
+  const mkt=$("market").value.trim()||"[target market]";
+  const purpose=$("purpose").value.trim();
+  const yrs=$("years").value;
+  const fmt=$("format").value;
+  const paid=$("paid").checked;
+  const bizSize=$("bizSize").value.trim();
+  const bench=$("s_bench").checked;
+  const minYear=2026-Number(yrs);
+  const chosen=SECTIONS.filter(([id])=>$("s_"+id).checked).map(([id])=>DETAIL[id]);
+  const global=lvl==="Global";
+
+  const sources = global
+    ? `- Government and multilateral statistics (U.S. Census Bureau, national statistical offices, OECD, World Bank, UN Comtrade, Eurostat)
+- Public company filings (SEC EDGAR 10-K/10-Q, annual reports)
+- Industry and trade associations
+- Reputable business press (Reuters, WSJ, Bloomberg, Financial Times)`
+    : `- U.S. Census Bureau: County Business Patterns, Economic Census, Nonemployer Statistics, American Community Survey (data.census.gov)
+- Bureau of Labor Statistics: QCEW, OEWS, Employment Projections (bls.gov)
+- Bureau of Economic Analysis (bea.gov)
+- State labor market information and economic development agencies for ${geo}
+- SEC EDGAR filings for public companies
+- Industry and trade associations for NAICS ${naics}
+- Reputable business press and local business journals`;
+  const benchSources = bench ? `\n\nBENCHMARKING SOURCES\n- Census Bureau: Economic Census and County Business Patterns (receipts, payroll, employees by establishment size)\n- IRS Statistics of Income (SOI) corporate and partnership returns by industry (dollar amounts by line item, which can be used to calculate common-size percentages)\n- Census Annual Business Survey and Quarterly Financial Report (where the industry is covered)\n- RMA Annual Statement Studies, BizMiner, or similar financial-ratio publishers${paid?"":" (only if you can read the figures directly)"}\n- Trade association operating surveys or cost studies for this industry\n- SEC filings of public peers (label these as large-company figures, not typical small-business norms)` : "";
+
+  const lines = [
+`ROLE
+You are a market research analyst. Research the industry below using live web search and report only facts you can attribute to a specific, real source.
+
+RESEARCH SUBJECT
+- NAICS code: ${naics}${ind?` (${ind})`:""}
+- Geography: ${geo} (${lvl})${cmp?`\n- Benchmark comparison: ${cmp}`:""}
+- Target market: ${mkt}${purpose?`\n- Purpose: ${purpose}`:""}${bench&&bizSize?`\n- Benchmark business size: ${bizSize}`:""}
+
+ACCURACY RULES (follow strictly)
+1. Do not invent, estimate, or "fill in" any number, company, quote, or source. If you cannot find a figure, write "Not found in available sources" and move on.
+2. Every statistic must have a citation in the text, for example [1], that maps to the source list.
+3. Only cite URLs you actually opened during this research. Do not construct or guess URLs.
+4. For every figure, state the data year (for example "2022 data, published 2024"). Prefer data from ${minYear} or later; if only older data exists, use it and flag it as older.
+5. Keep the NAICS code consistent. If a source uses a broader or different code (for example ${naics.slice(0,Math.max(2,naics.length-2))} instead of ${naics}), say so explicitly.
+6. If data is not available at the ${lvl.toLowerCase()} level, say that, then give the closest available level (state or national) and label it clearly.
+7. Separate facts from interpretation. Put your analysis in a section labeled "Analyst interpretation" and base it only on the cited facts.
+8. When sources disagree, report both figures with their sources rather than choosing one silently.
+9. Do not use AI-generated content farms, undated blog posts, or unattributed statistics as sources.${bench?"\n- If you calculate a ratio yourself (for example revenue per employee = total receipts ÷ employees), label it \"Calculated\", show the formula and the cited inputs, and use inputs from the same source and data year.":""}${paid?"":"\n10. Do not cite paywalled reports (IBISWorld, Statista, etc.) unless you could read the specific figure yourself. Do not repeat paywalled numbers quoted second-hand without naming where you saw them."}
+
+PREFERRED SOURCES (in priority order)
+${sources}${benchSources}
+
+SECTIONS TO COVER
+${chosen.length?chosen.map((c,i)=>`${i+1}. ${c}`).join("\n"):"(No sections selected. Choose at least one.)"}
+
+OUTPUT FORMAT
+- ${fmt}.
+- Begin with a 3–5 sentence summary of the most important verified findings.
+- Use tables for numeric data, with columns: Metric | Value | Geography | Data year | Source [#].${bench?`\n- Put benchmarks in their own table with columns: Metric | ${geo} | ${cmp||"Benchmark"} | Size class | Reported or Calculated | Data year | Source [#]. Leave a cell as "Not found" rather than estimating it.\n- Put common-size statements in two tables: Income statement (% of revenue) and Balance sheet (% of total assets), with columns: Line item | % | Size class | Reported or Calculated | Data year | Source [#]. If you calculate a percentage from dollar amounts, show the dollar inputs. Note that percentages from different sources may use different definitions and should not be mixed in one column.`:""}
+- End with "Data gaps": list everything you looked for but could not find.
+- End with "Sources": a numbered list with title, publisher, publication date, and URL for each source cited.
+
+SELF-CHECK BEFORE ANSWERING
+Review your draft. Remove or mark "Not found" any figure that lacks a citation, any URL you did not open, and any company you could not confirm operates in ${geo}.`
+  ];
+  const text=lines.join("\n");
+  $("prompt").textContent=text;
+  const w=text.split(/\s+/).filter(Boolean).length;
+  $("count").textContent=`${w.toLocaleString()} words · ${chosen.length} sections`;
+  try{localStorage.setItem("mrpb",JSON.stringify(save()))}catch(e){}
+}
+
+const IDS=["naics","industry","geoLevel","geo","compare","market","purpose","years","format","paid","bizSize",...SECTIONS.map(s=>"s_"+s[0])];
+function save(){const o={};IDS.forEach(i=>{const e=$(i);o[i]=e.type==="checkbox"?e.checked:e.value});return o}
+function load(o){IDS.forEach(i=>{if(!(i in o))return;const e=$(i);if(e.type==="checkbox")e.checked=o[i];else e.value=o[i]})}
+try{const s=localStorage.getItem("mrpb");if(s)load(JSON.parse(s))}catch(e){}
+
+$("f").addEventListener("input",build);
+$("f").addEventListener("change",build);
+$("f").addEventListener("submit",e=>e.preventDefault());
+$("reset").addEventListener("click",()=>{
+  ["naics","industry","geo","compare","market","purpose","bizSize"].forEach(i=>$(i).value="");
+  build();$("naics").focus();
+});
+$("copy").addEventListener("click",()=>{
+  const t=$("prompt").textContent;
+  const done=()=>{$("toast").textContent="Copied. Paste it into an AI chat with web search turned on.";setTimeout(()=>$("toast").textContent="",4000)};
+  const fallback=()=>{const r=document.createRange();r.selectNodeContents($("prompt"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("toast").textContent="Prompt selected. Press Ctrl+C (or ⌘C) to copy."};
+  try{navigator.clipboard.writeText(t).then(done,fallback)}catch(e){fallback()}
+});
+build();
+</script>
+
+</body>
+</html>
