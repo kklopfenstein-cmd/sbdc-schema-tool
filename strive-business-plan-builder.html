@@ -443,7 +443,7 @@ function defaultData(){
         cogs:'',markup:'',retailPrice:'',notes:''},
     s6:{roles:[{role:'',resp:'',type:'',count:'1',rate:'',hoursWk:'',start:'1',benefits:''}],
         tax:{ss:'6.2', medicare:'1.45', futa:'0.6', futaBase:'7000', suta:'2.85', sutaBase:'9000', wc:'1.0'},
-        inventory:'',
+        inventory:'', process:'', capacity:'', facilities:'', suppliers:'', quality:'',
         funding:[{source:'',type:'',amount:'',rate:'',term:'',status:''}],
         useOfFunds:[{category:'',amount:'',notes:''}],
         riskList:[{risk:'',likelihood:'',impact:'',mitigation:''}]},
@@ -2199,6 +2199,13 @@ function viewS6(){
   <div class="row2">${numField('Federal unemployment, FUTA (%)',t+'futa')}${numField('FUTA wage base per employee ($/yr)',t+'futaBase')}</div>
   <div class="row2">${numField('State unemployment, SUTA (%)',t+'suta')}${numField('SUTA wage base per employee ($/yr)',t+'sutaBase')}</div>
   <div class="calc-box" id="payrollCalc"></div>
+  <h3 class="sub">How We Deliver</h3>
+  <div class="callout">Describe how your business actually runs, from a customer's first contact to getting paid and getting them back. Use your Session 6 process map, capacity math and checklist. Not open yet? Describe how it <b>will</b> work. These print in your plan's <b>Operations Plan</b>.</div>
+  ${field('Walk through how a customer gets served, from first contact to payment and follow-up. Who handles each step?','s6.process',{textarea:true,rows:4,hint:'e.g., inquiry by phone → quote within 24 hrs → deposit → job scheduled → completed → invoice same day → follow-up call'})}
+  ${field('How many customers, orders or jobs can you handle a week right now? What step limits you, and how will you grow past it?','s6.capacity',{textarea:true,rows:3})}
+  ${field('Where will you operate, and what key equipment, tools and software do you need?','s6.facilities',{textarea:true,rows:3})}
+  ${field('Who are your key suppliers or service providers, and who is your backup for each?','s6.suppliers',{textarea:true,rows:3})}
+  ${field('How will you make sure the work is done right every time? Which numbers will you check each week?','s6.quality',{textarea:true,rows:3,hint:'e.g., written checklists for key tasks; weekly review of on-time rate, days to get paid, repeat customers'})}
   <h3 class="sub">Inventory Management</h3>
   ${field('How will you track, store, order & restock inventory? (skip if service-only)','s6.inventory',{textarea:true,rows:3})}
   <h3 class="sub">Risks &amp; Mitigation</h3>
@@ -2701,7 +2708,12 @@ function riskTableHtml(){
 }
 function genOperations(){
   const s6 = data.s6;
-  return docBlock('Inventory Management', docP(s6.inventory))
+  return docBlock('How We Deliver', docP(s6.process))
+    + docBlock('Capacity &amp; Growth', docP(s6.capacity))
+    + docBlock('Location, Equipment &amp; Technology', docP(s6.facilities))
+    + docBlock('Key Suppliers &amp; Backups', docP(s6.suppliers))
+    + docBlock('Quality &amp; Operating Measures', docP(s6.quality))
+    + docBlock('Inventory Management', docP(s6.inventory))
     + docBlock('Risks &amp; Mitigation', riskTableHtml());
 }
 function genBMCAppendixIntro(){
